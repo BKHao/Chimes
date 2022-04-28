@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-set(CMAKE_TOOLCHAIN_FILE D:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake)
+set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_CMAKE_PATH})
 project(Chimes)
 SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
 
