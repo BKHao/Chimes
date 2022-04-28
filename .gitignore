@@ -32,5 +32,10 @@
 *.app
 
 # build
+build*/
 
-build/
+# lib
+lib/
+
+# install
+install
