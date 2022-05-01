@@ -26,7 +26,7 @@ namespace Chimes
             typename Base::Vector gradient(n);
             gradient.setZero();
             typename Base::Vector iter_x = Base::init_x_;
-            Scalar fval = fun_(iter_x, gradient);
+            Scalar fval = Base::fun_(iter_x, gradient);
             if (Base::parameter_.is_show_)
             {
                 std::cout << 0 << "\t" << 0 << "\t" << (clock() - start_t) * 1.0 / CLOCKS_PER_SEC << "\t" << gradient.norm() << "\t"
