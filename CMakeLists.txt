@@ -6,7 +6,7 @@ SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
 # Default Build_type RELEASE
 set(CMAKE_BUILD_TYPE RELEASE)
 # CXX STANDARD
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 # Set Version
 set(VERSION 1.0)
 # Set lib output directory
@@ -19,6 +19,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 option(USE_OPTIMIZATION "use the optimization model" ON)
+option(USE_GEOMETRY "use the geometry model" ON)
 
 if (USE_OPTIMIZATION)
     find_package(Eigen3 REQUIRED)
@@ -41,11 +42,22 @@ if(WIN32 AND NOT MINGW)
   endif()
 endif()
 
+set(CHIMES_LIBS)
+
+if (USE_OPTIMIZATION)
+  list(APPEND CHIMES_LIBS Optimization)
+endif()
+
+if (USE_GEOMETRY)
+  list(APPEND CHIMES_LIBS Geometry)
+endif()
+
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(Main)
 
-install(TARGETS Optimization
+
+install(TARGETS ${CHIMES_LIBS}
 	EXPORT ${PROJECT_NAME}Targets
 	LIBRARY DESTINATION lib
 	ARCHIVE DESTINATION lib
