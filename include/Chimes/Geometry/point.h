@@ -26,7 +26,7 @@ namespace Chimes
                 
             }
             //Get a reference to an array of coordinates.
-            std::shared_ptr<Real>& data()
+            std::shared_ptr<Real>& Data()
             {
                 return coordinates_;
             }
@@ -37,19 +37,19 @@ namespace Chimes
             virtual Real& operator()(size_t i) = 0;
             //Get the length.
             //Pure virtual function.
-            virtual Real norm() const = 0;
+            virtual Real Norm() const = 0;
             //Get the squared distance.
             //Pure virtual function.
-            virtual Real squared_norm() const = 0;
+            virtual Real SquaredNorm() const = 0;
             //Get a string describing the type of the object.
             //Pure virtual function.
-            virtual GeometryType info() const = 0;
+            virtual GeometryType Info() const = 0;
             //Normalize the vector.
             //Pure virtual function.
-            virtual void normalize() = 0;
+            virtual void Normalize() = 0;
             //Get the dimension.
             //Pure virtual function.
-            virtual int dimension() const = 0;
+            virtual int Dimension() const = 0;
         protected:
             //coordinates array.
             std::shared_ptr<Real> coordinates_;
@@ -116,7 +116,7 @@ namespace Chimes
             //Initialize by move constructor, move another point p to this. Please make sure that p will not be used again.
             Point2(Point2<Real>&& p)
             {
-                Base::coordinates_ = std::move(p.data());
+                Base::coordinates_ = std::move(p.Data());
             }
             //Get the coordinate components, i from 0 to 1.
             virtual Real operator[](size_t i) const
@@ -137,7 +137,7 @@ namespace Chimes
                 return Base::coordinates_.get()[i];
             }
             //Get the dimension, return 2.
-            virtual int dimension() const
+            virtual int Dimension() const
             {
                 return 2;
             }
@@ -152,7 +152,7 @@ namespace Chimes
                 return Base::coordinates_.get()[1];
             }
             //Return the geometry type.
-            virtual GeometryType info() const
+            virtual GeometryType Info() const
             {
                 return GeometryType::POINT2;
             }
@@ -185,29 +185,29 @@ namespace Chimes
                 return Point2(Base::coordinates_.get()[0] + p.x(), Base::coordinates_.get()[1] + p.y());
             }
             //Get the squared distance.
-            virtual Real squared_norm() const
+            virtual Real SquaredNorm() const
             {
                 return Base::coordinates_.get()[0] * Base::coordinates_.get()[0] + Base::coordinates_.get()[1] * Base::coordinates_.get()[1];
             }
             //Get the length.
-            virtual Real norm() const
+            virtual Real Norm() const
             {
-                return Numerical::sqrt(squared_norm());
+                return Numerical::sqrt(SquaredNorm());
             }
             //Normalize the vector.
-            virtual void normalize()
+            virtual void Normalize()
             {
-                Real len = norm();
+                Real len = Norm();
                 Base::coordinates_.get()[0] /= len;
                 Base::coordinates_.get()[1] /= len;
             }
             //Return the unitization of the vector (Point_2), the vector itself is unchanged.
-            Point2 normalized() const
+            Point2 Normalized() const
             {
-                Real len = norm();
+                Real len = Norm();
                 return Point2(Base::coordinates_.get()[0] / len, Base::coordinates_.get()[1] / len);
             }
-            Point2 abs() const
+            Point2 Abs() const
             {
                 return Point2(
                     Numerical::abs(Base::coordinates_.get()[0]),
@@ -309,7 +309,7 @@ namespace Chimes
             //Initialize by move constructor, move another point p to this. Please make sure that p will not be used again.
             Point3(Point3<Real>&& p) noexcept
             {
-                Base::coordinates_ = std::move(p.data());
+                Base::coordinates_ = std::move(p.Data());
             }
             //Get the coordinate components, i from 0 to 2.
             virtual Real operator[](size_t i) const
@@ -329,7 +329,7 @@ namespace Chimes
                 return Base::coordinates_.get()[i];
             }
             //Get the dimension, return 3.
-            virtual int dimension() const
+            virtual int Dimension() const
             {
                 return 3;
             }
@@ -349,7 +349,7 @@ namespace Chimes
                 return Base::coordinates_.get()[2];
             }
             //Return the geometry type.
-            virtual GeometryType info() const
+            virtual GeometryType Info() const
             {
                 return GeometryType::POINT3;
             }
@@ -375,7 +375,7 @@ namespace Chimes
             //Return the result of a matrix3 m*p, m has operator[][].
             template <typename Matrix3>
             requires Concept_Matrix_Index<Matrix3>
-            Point3 transform(const Matrix3& m) const
+            Point3 Transform(const Matrix3& m) const
             {
                 return Point3(
                     Base::coordinates_.get()[0] * m(0, 0) + Base::coordinates_.get()[1] * m(0, 1) + Base::coordinates_.get()[2] * m(0, 2),
@@ -385,7 +385,7 @@ namespace Chimes
             //Return the result of a matrix3 m^T*p, m has operator[][].
             template <typename Matrix3>
             requires Concept_Matrix_Index<Matrix3>
-                Point3 transformT(const Matrix3& m) const
+                Point3 TransformT(const Matrix3& m) const
             {
                 return Point3(
                     Base::coordinates_.get()[0] * m(0, 0) + Base::coordinates_.get()[1] * m(1, 0) + Base::coordinates_.get()[2] * m(2, 0),
@@ -463,19 +463,19 @@ namespace Chimes
                 return *this;
             }
             //Get the squared distance.
-            virtual Real squared_norm() const
+            virtual Real SquaredNorm() const
             {
                 return Base::coordinates_.get()[0] * Base::coordinates_.get()[0] + Base::coordinates_.get()[1] * Base::coordinates_.get()[1] + Base::coordinates_.get()[2] * Base::coordinates_.get()[2];
             }
             //Get the lenght.
-            virtual Real norm() const
+            virtual Real Norm() const
             {
-                return sqrt(squared_norm());
+                return sqrt(SquaredNorm());
             }
             //Normalize the vector.
-            virtual void normalize()
+            virtual void Normalize()
             {
-                Real len = norm();
+                Real len = Norm();
                 if (Numerical::instance().sign(len) != Numerical::Sign::ZERO)
                 {
                     Base::coordinates_.get()[0] /= len;
@@ -484,16 +484,16 @@ namespace Chimes
                 }                
             }
             //Return the unitization of the vector (Point_3), the vector itself is unchanged.
-            Point3 normalized() const
+            Point3 Normalized() const
             {
-                Real len = norm();
+                Real len = Norm();
                 if (Numerical::instance().sign(len) != Numerical::Sign::ZERO)
                 {
                     return Point3(Base::coordinates_.get()[0] / len, Base::coordinates_.get()[1] / len, Base::coordinates_.get()[2] / len);
                 }
                 return *this;
             }
-            Point3 abs() const
+            Point3 Abs() const
             {
                 return Point3(
                     Numerical::abs(Base::coordinates_.get()[0]),

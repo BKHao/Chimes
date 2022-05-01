@@ -23,7 +23,7 @@ namespace Chimes
             //Get the id of the object.
             virtual int id() const;
             //Get a string describing the type of the object.
-            virtual GeometryType info() const = 0;
+            virtual GeometryType Info() const = 0;
         protected:
             int id_;
         };
