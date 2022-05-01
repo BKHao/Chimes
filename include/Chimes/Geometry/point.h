@@ -184,6 +184,15 @@ namespace Chimes
             {
                 return Point2(Base::coordinates_.get()[0] + p.x(), Base::coordinates_.get()[1] + p.y());
             }
+            //this point += p
+            template <typename P2>
+            requires concept_point_index<P2>
+                Point2& operator+=(const P2& p)
+            {
+                Base::coordinates_.get()[0] += p[0];
+                Base::coordinates_.get()[1] += p[1];
+                return *this;
+            }
             //Get the squared distance.
             virtual Real SquaredNorm() const
             {

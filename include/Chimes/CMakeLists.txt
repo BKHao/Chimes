@@ -12,5 +12,8 @@ endif()
 if (USE_GEOMETRY)
         list(APPEND Chimes_HEADERS 
                 Geometry/geometry_object.h
-                Geometry/point.h)
+                Geometry/point.h
+                Geometry/polygon.h
+                Geometry/triangle.h
+        )
 endif()

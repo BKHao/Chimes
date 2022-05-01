@@ -11,6 +11,9 @@ namespace Chimes
             POINT,
             POINT2,
             POINT3,
+            SIMPLE_POLYGON,
+            CONVEX_POLYGON,
+            TRIANGLE,
         };
         //Chimes's geometry object class, all geometry objects are based on it.
         class GeometryObject

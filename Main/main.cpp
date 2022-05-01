@@ -1,6 +1,8 @@
 
 #include <Chimes/Optimization/steepest_descent.h>
 #include <Chimes/Geometry/point.h>
+#include <Chimes/Geometry/polygon.h>
+#include <Chimes/Geometry/triangle.h>
 #include <functional>
 #include <memory>
 
@@ -30,11 +32,22 @@ int main(int argv, char* argc[])
 {
 	using point2 = Chimes::geometry::Point2<double>;
 	using point3 = Chimes::geometry::Point3<double>;
-	point3 p(1, 1, 1);
+	using polygon = Chimes::geometry::ConvexPolygon<point2>;
+	using tri = Chimes::geometry::Triangle<point2>;
+	point2 p0(0, 0);
+	point2 p1(1, 0);
+	point2 p2(1, 1);
+	point2 p3(0, 1);
+	polygon poly;
+	poly.Start();
+	poly.Insert(p0);
+	poly.Insert(p1);
+	poly.Insert(p2);
+	poly.Insert(p3);
+	poly.End();
+	std::cout << poly.MassCenter() << std::endl;
 
-	point3 p2(p);
-	std::cout << p * (3.0 * p2) << std::endl;
-
-	std::cout << "success!" << std::endl;
+	tri tri0(p0, p1, p2);
+	std::cout << tri0 << std::endl;
 	return 0;
 }

@@ -47,10 +47,10 @@ namespace Chimes
         template <typename P>
         concept concept_point_normal = requires(P p, P q, typename P::R t)
         {
-            t = p.norm();
-            t = p.squared_norm();
-            q = p.normalized();
-            p.normalize();
+            t = p.Norm();
+            t = p.SquaredNorm();
+            q = p.Normalized();
+            p.Normalize();
         };
         //Describe the operation of points and out stream.
         template <typename P>
