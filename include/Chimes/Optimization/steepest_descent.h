@@ -11,7 +11,7 @@ namespace Chimes
     private:
         using Base = LineSearchMethod<Fun, Scalar>;
     public:
-        SteepestDescent(Fun& fun, const Base::Vector& init_x) : Base(fun, init_x)
+        SteepestDescent(Fun& fun, const typename Base::Vector& init_x) : Base(fun, init_x)
         {
             
         }
@@ -23,16 +23,16 @@ namespace Chimes
         {
             const clock_t start_t = clock();
             const int n = Base::init_x_.size();
-            Base::Vector gradient(n);
+            typename Base::Vector gradient(n);
             gradient.setZero();
-            Base::Vector iter_x = Base::init_x_;
+            typename Base::Vector iter_x = Base::init_x_;
             Scalar fval = fun_(iter_x, gradient);
             if (Base::parameter_.is_show_)
             {
                 std::cout << 0 << "\t" << 0 << "\t" << (clock() - start_t) * 1.0 / CLOCKS_PER_SEC << "\t" << gradient.norm() << "\t"
                     << fval << std::endl;
             }
-            Base::Vector direction = -gradient;
+            typename Base::Vector direction = -gradient;
             int k = 0;
             int l = 0;
             Scalar step = Scalar(1.0) / direction.norm();
