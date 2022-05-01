@@ -5,6 +5,13 @@ namespace Chimes
     //This namespace contains geometry-related classes.
     namespace geometry
     {
+        enum class GeometryType
+        {
+            META,
+            POINT,
+            POINT2,
+            POINT3,
+        };
         //Chimes's geometry object class, all geometry objects are based on it.
         class GeometryObject
         {
@@ -16,7 +23,7 @@ namespace Chimes
             //Get the id of the object.
             virtual int id() const;
             //Get a string describing the type of the object.
-            virtual std::string info() const = 0;
+            virtual GeometryType info() const = 0;
         protected:
             int id_;
         };

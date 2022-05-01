@@ -8,11 +8,11 @@ namespace Chimes
     namespace geometry
     {
         template<typename Real>
-        class Point_2;
+        class Point2;
         template<typename Real>
-        class Point_3;
+        class Point3;
 
-        //The base class of point, which requires a template of real number class. Contains four real numbers (x, y, z, w), set the visibility according to the actual type.
+        //The base class of point, which requires a template of real number class. Contains a number array, set the visibility according to the actual type.
         template <typename Real>
         requires concept_real<Real>
         class Point : public GeometryObject
@@ -20,15 +20,15 @@ namespace Chimes
         public:
             //Corresponding class for real number.
             using R = Real;
-            //Default initialization called by subclasses. Initialize homogeneous coordinates to 0.
-            Point() : _coordinates(4, Real())
+            //Default initialization called by subclasses. Initialize coordinates to 0.
+            Point() : coordinates_(nullptr)
             {
-                _coordinates[3] = 1;
+                
             }
-            //Get a reference to an array of homogeneous coordinates.
-            std::vector<Real>& data()
+            //Get a reference to an array of coordinates.
+            std::shared_ptr<Real>& data()
             {
-                return _coordinates;
+                return coordinates_;
             }
             //Overloads [] to obtain homogeneous coordinates, and is overloaded by subclasses to set visibility.
             //Pure virtual function.
@@ -43,7 +43,7 @@ namespace Chimes
             virtual Real squared_norm() const = 0;
             //Get a string describing the type of the object.
             //Pure virtual function.
-            virtual std::string info() const = 0;
+            virtual GeometryType info() const = 0;
             //Normalize the vector.
             //Pure virtual function.
             virtual void normalize() = 0;
@@ -51,50 +51,90 @@ namespace Chimes
             //Pure virtual function.
             virtual int dimension() const = 0;
         protected:
-            //Homogeneous coordinates (x, y, z, w).
-            std::vector<Real> _coordinates;
+            //coordinates array.
+            std::shared_ptr<Real> coordinates_;
         };
-        //2D point, inherited from Point. z and w are not visible in homogeneous coordinates.
+        //2D point, (x, y), inherited from Point.
         template <typename Real>
-        class Point_2 :public Point<Real>
+        class Point2 :public Point<Real>
         {
         private:
             using Base = Point<Real>;
         public:
-            //The coordinates are initialized to (0, 0, 0, 1) by default.
-            Point_2()
+            //The coordinates are initialized to (0, 0) by default.
+            Point2()
             {
-
+                Real* data = new Real[2];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = Real(0);
+                data[1] = Real(0);
             }
-            //The coordinates are initialized to (a, b, 0, 1) by default.
-            Point_2(const Real& a, const Real& b)
+            //The coordinates are initialized to (a, b).
+            Point2(const Real& a, const Real& b)
             {
-                Base::_coordinates[0] = a;
-                Base::_coordinates[1] = b;
+                Real* data = new Real[2];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = a;
+                data[1] = b;
             }
             //Initialize with the coordinates of another 2D point p.
             template <typename R2>
-            Point_2(const Point_2<R2>& p)
+            Point2(const Point2<R2>& p)
             {
-                Base::_coordinates[0] = p.x();
-                Base::_coordinates[1] = p.y();
+                Real* data = new Real[2];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+            }
+            //Initialize with the coordinates of another 2D point p.
+            template <typename R2>
+            Point2& operator=(const Point2<R2>& p)
+            {
+                Real* data = new Real[2];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+                return *this;
+            }
+            //Initialize with the coordinates of another 2D point p.
+            Point2(const Point2& p)
+            {
+                Real* data = new Real[2];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+            }
+            //Initialize with the coordinates of another 2D point p.
+            Point2& operator=(const Point2& p)
+            {
+                Real* data = new Real[2];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+                return *this;
+            }
+            //Initialize by move constructor, move another point p to this. Please make sure that p will not be used again.
+            Point2(Point2<Real>&& p)
+            {
+                Base::coordinates_ = std::move(p.data());
             }
             //Get the coordinate components, i from 0 to 1.
             virtual Real operator[](size_t i) const
             {
                 if (i > 1)
                 {
-                    return Real(0);
+                    std::runtime_error("The index of a 2D point out of range!");
                 }
-                return Base::_coordinates[i];
+                return Base::coordinates_.get()[i];
             }
+            //Get the coordinate components reference, i from 0 to 1.
             virtual Real& operator()(size_t i)
             {
                 if (i > 1)
                 {
-                    return Base::_coordinates[3];
+                    std::runtime_error("The index of a 2D point out of range!");
                 }
-                return Base::_coordinates[i];
+                return Base::coordinates_.get()[i];
             }
             //Get the dimension, return 2.
             virtual int dimension() const
@@ -104,50 +144,50 @@ namespace Chimes
             //Get the x component.
             Real x() const
             {
-                return Base::_coordinates[0];
+                return Base::coordinates_.get()[0];
             }
             //Get the x component.
             Real y() const
             {
-                return Base::_coordinates[1];
+                return Base::coordinates_.get()[1];
             }
-            //Return string "Point2".
-            virtual std::string info() const
+            //Return the geometry type.
+            virtual GeometryType info() const
             {
-                return "Point2";
+                return GeometryType::POINT2;
             }
             //Get the inner product with p. Return a real number.
             template <typename R2>
-            Real operator*(const Point_2<R2>& p) const
+            Real operator*(const Point2<R2>& p) const
             {
-                return Base::_coordinates[0] * p.x() + Base::_coordinates[1] * p.y();
+                return Base::coordinates_.get()[0] * p.x() + Base::coordinates_.get()[1] * p.y();
             }
             //Return the point multiplied by t.
-            Point_2 operator*(const Real& t) const
+            Point2 operator*(const Real& t) const
             {
-                return Point_2(Base::_coordinates[0] * t, Base::_coordinates[1] * t);
+                return Point2(Base::coordinates_.get()[0] * t, Base::coordinates_.get()[1] * t);
             }
             //Return the point divided by t.
-            Point_2 operator/(const Real& t) const
+            Point2 operator/(const Real& t) const
             {
-                return Point_2(Base::_coordinates[0] / t, Base::_coordinates[1] / t);
+                return Point2(Base::coordinates_.get()[0] / t, Base::coordinates_.get()[1] / t);
             }
             //Get the vector from p to the point. Return a 2D point.
             template <typename R2>
-            Point_2 operator-(const Point_2<R2>& p) const
+            Point2 operator-(const Point2<R2>& p) const
             {
-                return Point_2(Base::_coordinates[0] - p.x(), Base::_coordinates[1] - p.y());
+                return Point2(Base::coordinates_.get()[0] - p.x(), Base::coordinates_.get()[1] - p.y());
             }
             //Returns a 2D point whose coordinates are the addition of this point and p.
             template <typename R2>
-            Point_2 operator+(const Point_2<R2>& p)
+            Point2 operator+(const Point2<R2>& p)
             {
-                return Point_2(Base::_coordinates[0] + p.x(), Base::_coordinates[1] + p.y());
+                return Point2(Base::coordinates_.get()[0] + p.x(), Base::coordinates_.get()[1] + p.y());
             }
             //Get the squared distance.
             virtual Real squared_norm() const
             {
-                return Base::_coordinates[0] * Base::_coordinates[0] + Base::_coordinates[1] * Base::_coordinates[1];
+                return Base::coordinates_.get()[0] * Base::coordinates_.get()[0] + Base::coordinates_.get()[1] * Base::coordinates_.get()[1];
             }
             //Get the length.
             virtual Real norm() const
@@ -158,86 +198,135 @@ namespace Chimes
             virtual void normalize()
             {
                 Real len = norm();
-                Base::_coordinates[0] /= len;
-                Base::_coordinates[1] /= len;
+                Base::coordinates_.get()[0] /= len;
+                Base::coordinates_.get()[1] /= len;
             }
             //Return the unitization of the vector (Point_2), the vector itself is unchanged.
-            Point_2 normalized() const
+            Point2 normalized() const
             {
                 Real len = norm();
-                return Point_2(Base::_coordinates[0] / len, Base::_coordinates[1] / len);
+                return Point2(Base::coordinates_.get()[0] / len, Base::coordinates_.get()[1] / len);
             }
-            Point_2 abs() const
+            Point2 abs() const
             {
-                return Point_2(
-                    Numerical::abs(Base::_coordinates[0]),
-                    Numerical::abs(Base::_coordinates[1]));
+                return Point2(
+                    Numerical::abs(Base::coordinates_.get()[0]),
+                    Numerical::abs(Base::coordinates_.get()[1]));
             }
             //Returns the outer product with a 2D point p. The result is a 3D point Point_3.
-            Point_3<Real> operator^(const Point_2& p) const
+            Point3<Real> operator^(const Point2& p) const
             {
-                return Point_3(0, 0, Base::_coordinates[0] * p.y() - Base::_coordinates[1] * p.x());
+                return Point3(0, 0, Base::coordinates_.get()[0] * p.y() - Base::coordinates_.get()[1] * p.x());
             }
-            friend std::ostream& operator<< <Real>(std::ostream& os, const Point_2& p);
-            friend std::istream& operator>> <Real>(std::istream& is, Point_2& p);
+            friend std::ostream& operator<< <Real>(std::ostream& os, const Point2& p);
+            friend std::istream& operator>> <Real>(std::istream& is, Point2& p);
         };
 
-        ////3D point, inherited from Point. w is not visible in homogeneous coordinates.
+        ////3D point, (x, y, z), inherited from Point.
         template <typename Real>
-        class Point_3 : public Point<Real>
+        class Point3 : public Point<Real>
         {
         private:
             using Base = Point<Real>;
         public:
-            //The coordinates are initialized to (0, 0, 0, 1) by default.
-            Point_3()
+            //The coordinates are initialized to (0, 0, 0) by default.
+            Point3()
             {
-
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = Real(0);
+                data[1] = Real(0);
+                data[2] = Real(0);
             }
-            //The coordinates are initialized to (a, b, c, 1) by default.
-            Point_3(const Real& a, const Real& b, const Real& c)
+            //The coordinates are initialized to (a, b, c) by default.
+            Point3(const Real& a, const Real& b, const Real& c)
             {
-                Base::_coordinates[0] = a;
-                Base::_coordinates[1] = b;
-                Base::_coordinates[2] = c;
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = a;
+                data[1] = b;
+                data[2] = c;
             }
-            //The coordinates are initialized to (a, b, 0, 1) by default.
-            Point_3(const Real& a, const Real& b)
+            //The coordinates are initialized to (a, b, 0) by default.
+            Point3(const Real& a, const Real& b)
             {
-                Base::_coordinates[0] = a;
-                Base::_coordinates[1] = b;
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = a;
+                data[1] = b;
+                data[2] = Real(0);
             }
             //Initialize with the coordinates of another 3D point p.
             template <typename R2>
-            Point_3(const Point_3<R2>& p)
+            Point3(const Point3<R2>& p)
             {
-                Base::_coordinates[0] = p.x();
-                Base::_coordinates[1] = p.y();
-                Base::_coordinates[2] = p.z();
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+                data[2] = p.z();
+            }
+            //Initialize with the coordinates of another 3D point p.
+            template <typename R2>
+            Point3& operator=(const Point3<R2>& p)
+            {
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+                data[2] = p.z();
+                return *this;
+            }
+            //Initialize with the coordinates of another 3D point p.
+            Point3(const Point3& p)
+            {
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+                data[2] = p.z();
+            }
+            //Initialize with the coordinates of another 3D point p.
+            Point3& operator=(const Point3& p)
+            {
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+                data[2] = p.z();
+                return *this;
             }
             //Initialize with the coordinates of another 2D point p, and z = 0;
             template <typename R2>
-            Point_3(const Point_2<R2>& p)
+            Point3(const Point2<R2>& p)
             {
-                Base::_coordinates[0] = p.x();
-                Base::_coordinates[1] = p.y();
+                Real* data = new Real[3];
+                Base::coordinates_ = std::shared_ptr<Real>(data, [](Real* p) {delete[] p; });
+                data[0] = p.x();
+                data[1] = p.y();
+                data[2] = Real(0);
+            }
+            //Initialize by move constructor, move another point p to this. Please make sure that p will not be used again.
+            Point3(Point3<Real>&& p) noexcept
+            {
+                Base::coordinates_ = std::move(p.data());
             }
             //Get the coordinate components, i from 0 to 2.
             virtual Real operator[](size_t i) const
             {
                 if (i > 2)
                 {
-                    return Real(0);
+                    std::runtime_error("The index of a 3D point out of range!");
                 }
-                return Base::_coordinates[i];
+                return Base::coordinates_.get()[i];
             }
             virtual Real& operator()(size_t i)
             {
                 if (i > 2)
                 {
-                    return Base::_coordinates[3];
+                    std::runtime_error("The index of a 3D point out of range!");
                 }
-                return Base::_coordinates[i];
+                return Base::coordinates_.get()[i];
             }
             //Get the dimension, return 3.
             virtual int dimension() const
@@ -247,142 +336,136 @@ namespace Chimes
             //Get the x component.
             Real x() const
             {
-                return Base::_coordinates[0];
+                return Base::coordinates_.get()[0];
             }
             //Get the y component.
             Real y() const
             {
-                return Base::_coordinates[1];
+                return Base::coordinates_.get()[1];
             }
             //Get the z component.
             Real z() const
             {
-                return Base::_coordinates[2];
+                return Base::coordinates_.get()[2];
             }
-            //Return string "Point3".
-            virtual std::string info() const
+            //Return the geometry type.
+            virtual GeometryType info() const
             {
-                return "Point3";
+                return GeometryType::POINT3;
             }
             //Get the inner product with 2D point p. Return a real number.
             template <typename R2>
-            Real operator*(const Point_2<R2>& p) const
+            Real operator*(const Point2<R2>& p) const
             {
-                return Base::_coordinates[0] * p.x() + Base::_coordinates[1] * p.y();
+                return Base::coordinates_.get()[0] * p.x() + Base::coordinates_.get()[1] * p.y();
             }
             //Return the inner product with 3D point p.
             template <typename R2>
-            Real operator*(const Point_3<R2>& p) const
+            Real operator*(const Point3<R2>& p) const
             {
-                return Base::_coordinates[0] * p.x() + Base::_coordinates[1] * p.y() + Base::_coordinates[2] * p.z();
+                return Base::coordinates_.get()[0] * p.x() + Base::coordinates_.get()[1] * p.y() + Base::coordinates_.get()[2] * p.z();
             }
-
             //Return the inner product with 3D point p, which has p[].
             template <typename P3>
-            requires Concept_Point_Index<P3>
+            requires concept_point_index<P3>
             Real operator*(const P3& p) const
             {
-                return Base::_coordinates[0] * p[0] + Base::_coordinates[1] * p[1] + Base::_coordinates[2] * p[2];
+                return Base::coordinates_.get()[0] * p[0] + Base::coordinates_.get()[1] * p[1] + Base::coordinates_.get()[2] * p[2];
             }
-
             //Return the result of a matrix3 m*p, m has operator[][].
             template <typename Matrix3>
             requires Concept_Matrix_Index<Matrix3>
-            Point_3 transform(const Matrix3& m) const
+            Point3 transform(const Matrix3& m) const
             {
-                return Point_3(
-                    Base::_coordinates[0] * m(0, 0) + Base::_coordinates[1] * m(0, 1) + Base::_coordinates[2] * m(0, 2),
-                    Base::_coordinates[0] * m(1, 0) + Base::_coordinates[1] * m(1, 1) + Base::_coordinates[2] * m(1, 2),
-                    Base::_coordinates[0] * m(2, 0) + Base::_coordinates[1] * m(2, 1) + Base::_coordinates[2] * m(2, 2));
+                return Point3(
+                    Base::coordinates_.get()[0] * m(0, 0) + Base::coordinates_.get()[1] * m(0, 1) + Base::coordinates_.get()[2] * m(0, 2),
+                    Base::coordinates_.get()[0] * m(1, 0) + Base::coordinates_.get()[1] * m(1, 1) + Base::coordinates_.get()[2] * m(1, 2),
+                    Base::coordinates_.get()[0] * m(2, 0) + Base::coordinates_.get()[1] * m(2, 1) + Base::coordinates_.get()[2] * m(2, 2));
             }
-
             //Return the result of a matrix3 m^T*p, m has operator[][].
             template <typename Matrix3>
             requires Concept_Matrix_Index<Matrix3>
-                Point_3 transformT(const Matrix3& m) const
+                Point3 transformT(const Matrix3& m) const
             {
-                return Point_3(
-                    Base::_coordinates[0] * m(0, 0) + Base::_coordinates[1] * m(1, 0) + Base::_coordinates[2] * m(2, 0),
-                    Base::_coordinates[0] * m(0, 1) + Base::_coordinates[1] * m(1, 1) + Base::_coordinates[2] * m(2, 1),
-                    Base::_coordinates[0] * m(0, 2) + Base::_coordinates[1] * m(1, 2) + Base::_coordinates[2] * m(2, 2));
+                return Point3(
+                    Base::coordinates_.get()[0] * m(0, 0) + Base::coordinates_.get()[1] * m(1, 0) + Base::coordinates_.get()[2] * m(2, 0),
+                    Base::coordinates_.get()[0] * m(0, 1) + Base::coordinates_.get()[1] * m(1, 1) + Base::coordinates_.get()[2] * m(2, 1),
+                    Base::coordinates_.get()[0] * m(0, 2) + Base::coordinates_.get()[1] * m(1, 2) + Base::coordinates_.get()[2] * m(2, 2));
             }
-
             //Return the point multiplied by t.
-            Point_3 operator*(const Real& t) const
+            Point3 operator*(const Real& t) const
             {
-                return Point_3(Base::_coordinates[0] * t, Base::_coordinates[1] * t, Base::_coordinates[2] * t);
+                return Point3(Base::coordinates_.get()[0] * t, Base::coordinates_.get()[1] * t, Base::coordinates_.get()[2] * t);
             }
             //Return the point divided by t.
-            Point_3 operator/(const Real& t) const
+            Point3 operator/(const Real& t) const
             {
-                return Point_3(Base::_coordinates[0] / t, Base::_coordinates[1] / t, Base::_coordinates[2] / t);
+                return Point3(Base::coordinates_.get()[0] / t, Base::coordinates_.get()[1] / t, Base::coordinates_.get()[2] / t);
             }
 
             //Get the vector from p to the point. Return a 3D point.
             template <typename R2>
-            Point_3 operator-(const Point_2<R2>& p) const
+            Point3 operator-(const Point2<R2>& p) const
             {
-                return Point_3(Base::_coordinates[0] - p.x(), Base::_coordinates[1] - p.y(), Base::_coordinates[2]);
+                return Point3(Base::coordinates_.get()[0] - p.x(), Base::coordinates_.get()[1] - p.y(), Base::coordinates_.get()[2]);
             }
             
             //Get the vector from p to the point. Return a 3D point.
             template <typename R2>
-            Point_3 operator-(const Point_3<R2>& p) const
+            Point3 operator-(const Point3<R2>& p) const
             {
-                return Point_3(Base::_coordinates[0] - p.x(), Base::_coordinates[1] - p.y(), Base::_coordinates[2] - p.z());
+                return Point3(Base::coordinates_.get()[0] - p.x(), Base::coordinates_.get()[1] - p.y(), Base::coordinates_.get()[2] - p.z());
             }
             //Get the vector from p to the point. Return a 3D point.
             template <typename P3>
-            requires Concept_Point_Index<P3>
-            Point_3 operator-(const P3& p) const
+            requires concept_point_index<P3>
+            Point3 operator-(const P3& p) const
             {
-                return Point_3(Base::_coordinates[0] - p[0], Base::_coordinates[1] - p[1], Base::_coordinates[2] - p[2]);
+                return Point3(Base::coordinates_.get()[0] - p[0], Base::coordinates_.get()[1] - p[1], Base::coordinates_.get()[2] - p[2]);
             }
             //Return a 3D point whose coordinates are the addition of this point and p.
             template <typename R2>
-            Point_3 operator+(const Point_2<R2>& p) const
+            Point3 operator+(const Point2<R2>& p) const
             {
-                return Point_3(Base::_coordinates[0] + p.x(), Base::_coordinates[1] + p.y(), Base::_coordinates[2]);
+                return Point3(Base::coordinates_.get()[0] + p.x(), Base::coordinates_.get()[1] + p.y(), Base::coordinates_.get()[2]);
             }
             //Return a 3D point whose coordinates are the addition of this point and p.
             template <typename R2>
-            Point_3 operator+(const Point_3<R2>& p) const
+            Point3 operator+(const Point3<R2>& p) const
             {
-                return Point_3(Base::_coordinates[0] + p.x(), Base::_coordinates[1] + p.y(), Base::_coordinates[2] + p.z());
+                return Point_3(Base::coordinates_.get()[0] + p.x(), Base::coordinates_.get()[1] + p.y(), Base::coordinates_.get()[2] + p.z());
             }
             //Return a 3D point whose coordinates are the addition of this point and p.
             template <typename P3>
-            requires Concept_Point_Index<P3>
-            Point_3 operator+(const P3& p) const
+            requires concept_point_index<P3>
+            Point3 operator+(const P3& p) const
             {
-                return Point_3(Base::_coordinates[0] + p[0], Base::_coordinates[1] + p[1], Base::_coordinates[2] + p[2]);
+                return Point3(Base::coordinates_.get()[0] + p[0], Base::coordinates_.get()[1] + p[1], Base::coordinates_.get()[2] + p[2]);
             }
             //this point -= p
             template <typename P3>
-            requires Concept_Point_Index<P3>
-            Point_3& operator-=(const P3& p)
+            requires concept_point_index<P3>
+            Point3& operator-=(const P3& p)
             {
-                Base::_coordinates[0] -= p[0];
-                Base::_coordinates[1] -= p[1];
-                Base::_coordinates[2] -= p[2];
+                Base::coordinates_.get()[0] -= p[0];
+                Base::coordinates_.get()[1] -= p[1];
+                Base::coordinates_.get()[2] -= p[2];
                 return *this;
             }
             //this point += p
             template <typename P3>
-            requires Concept_Point_Index<P3>
-            Point_3& operator+=(const P3& p)
+            requires concept_point_index<P3>
+            Point3& operator+=(const P3& p)
             {
-                Base::_coordinates[0] += p[0];
-                Base::_coordinates[1] += p[1];
-                Base::_coordinates[2] += p[2];
+                Base::coordinates_.get()[0] += p[0];
+                Base::coordinates_.get()[1] += p[1];
+                Base::coordinates_.get()[2] += p[2];
                 return *this;
             }
-            
-
             //Get the squared distance.
             virtual Real squared_norm() const
             {
-                return Base::_coordinates[0] * Base::_coordinates[0] + Base::_coordinates[1] * Base::_coordinates[1] + Base::_coordinates[2] * Base::_coordinates[2];
+                return Base::coordinates_.get()[0] * Base::coordinates_.get()[0] + Base::coordinates_.get()[1] * Base::coordinates_.get()[1] + Base::coordinates_.get()[2] * Base::coordinates_.get()[2];
             }
             //Get the lenght.
             virtual Real norm() const
@@ -395,71 +478,70 @@ namespace Chimes
                 Real len = norm();
                 if (Numerical::instance().sign(len) != Numerical::Sign::ZERO)
                 {
-                    Base::_coordinates[0] /= len;
-                    Base::_coordinates[1] /= len;
-                    Base::_coordinates[2] /= len;
+                    Base::coordinates_.get()[0] /= len;
+                    Base::coordinates_.get()[1] /= len;
+                    Base::coordinates_.get()[2] /= len;
                 }                
             }
             //Return the unitization of the vector (Point_3), the vector itself is unchanged.
-            Point_3 normalized() const
+            Point3 normalized() const
             {
                 Real len = norm();
                 if (Numerical::instance().sign(len) != Numerical::Sign::ZERO)
                 {
-                    return Point_3(Base::_coordinates[0] / len, Base::_coordinates[1] / len, Base::_coordinates[2] / len);
+                    return Point3(Base::coordinates_.get()[0] / len, Base::coordinates_.get()[1] / len, Base::coordinates_.get()[2] / len);
                 }
                 return *this;
             }
-            Point_3 abs() const
+            Point3 abs() const
             {
-                return Point_3(
-                    Numerical::abs(Base::_coordinates[0]),
-                    Numerical::abs(Base::_coordinates[1]),
-                    Numerical::abs(Base::_coordinates[2]));
+                return Point3(
+                    Numerical::abs(Base::coordinates_.get()[0]),
+                    Numerical::abs(Base::coordinates_.get()[1]),
+                    Numerical::abs(Base::coordinates_.get()[2]));
             }
             //Returns the outer product with a 2D point p. The result is a 3D point Point_3.
-            Point_3 operator^(const Point_3& p) const
+            Point3 operator^(const Point3& p) const
             {
-                return Point_3(Base::_coordinates[1] * p.z() - Base::_coordinates[2] * p.y(), Base::_coordinates[2] * p.x() - Base::_coordinates[0] * p.z(), Base::_coordinates[0] * p.y() - Base::_coordinates[1] * p.x());
+                return Point3(Base::coordinates_.get()[1] * p.z() - Base::coordinates_.get()[2] * p.y(), Base::coordinates_.get()[2] * p.x() - Base::coordinates_.get()[0] * p.z(), Base::coordinates_.get()[0] * p.y() - Base::coordinates_.get()[1] * p.x());
             }
-            friend Point_3 operator* <Real>(const Real& t, const Point_3& p);
-            friend std::ostream& operator<< <Real>(std::ostream& os, const Point_3& p);
-            friend std::istream& operator>> <Real>(std::istream& is, Point_3& p);
+            friend Point3 operator* <Real>(const Real& t, const Point3& p);
+            friend std::ostream& operator<< <Real>(std::ostream& os, const Point3& p);
+            friend std::istream& operator>> <Real>(std::istream& is, Point3& p);
         };
         //Send x and y to os.
         template <typename Real>
-        inline std::ostream& operator<<(std::ostream& os, const Point_2<Real>& p)
+        inline std::ostream& operator<<(std::ostream& os, const Point2<Real>& p)
         {
             os << p.x() << " " << p.y();
             return os;
         }
         //Set x and y from is.
         template <typename Real>
-        inline std::istream& operator>>(std::istream& is, Point_2<Real>& p)
+        inline std::istream& operator>>(std::istream& is, Point2<Real>& p)
         {
-            is >> p._coordinates[0] >> p._coordinates[1];
+            is >> p.coordinates_.get()[0] >> p.coordinates_.get()[1];
             return is;
         }
         //Get the number multiplied by t. Return a 3D point.
         template <typename Real>
-        inline Point_3<Real> operator*(const Real& t, const Point_3<Real>& p)
+        inline Point3<Real> operator*(const Real& t, const Point3<Real>& p)
         {
             return p * t;
         }
         //Send x, y and z to os.
         template <typename Real>
-        inline std::ostream& operator<<(std::ostream& os, const Point_3<Real>& p)
+        inline std::ostream& operator<<(std::ostream& os, const Point3<Real>& p)
         {
             os << p.x() << " " << p.y() << " " << p.z();
             return os;
         }
         //Set x, y and z from is.
         template <typename Real>
-        inline std::istream& operator>>(std::istream& is, Point_3<Real>& p)
+        inline std::istream& operator>>(std::istream& is, Point3<Real>& p)
         {
-            is >> p._coordinates[0] >> p._coordinates[1] >> p._coordinates[2];
+            is >> p.coordinates_.get()[0] >> p.coordinates_.get()[1] >> p.coordinates_.get()[2];
             return is;
         }
-
     }
 }
