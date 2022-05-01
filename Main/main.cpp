@@ -1,4 +1,4 @@
-#include <iostream>
+
 #include <Chimes/Optimization/steepest_descent.h>
 #include <Chimes/Geometry/point.h>
 #include <functional>
