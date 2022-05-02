@@ -3,6 +3,7 @@
 #include <Chimes/Geometry/point.h>
 #include <Chimes/Geometry/polygon.h>
 #include <Chimes/Geometry/triangle.h>
+//#include <Chimes/Geometry/surface.h>
 #include <functional>
 #include <memory>
 
@@ -27,7 +28,6 @@ void test_steepest_descent()
 	std::cout << "fval: " << result.fval << "  x: " << result.res_x[0] << " " << result.res_x[1] << std::endl;
 }
 
-
 int main(int argv, char* argc[])
 {
 	using point2 = Chimes::geometry::Point2<double>;
@@ -46,8 +46,13 @@ int main(int argv, char* argc[])
 	poly.Insert(p3);
 	poly.End();
 	std::cout << poly.MassCenter() << std::endl;
-
+	int* ids = new int[3];
+	ids[0] = 0;
+	ids[1] = 1;
+	ids[2] = 2;
+	std::shared_ptr<int> sids(ids, [](int* p) {delete[] p; });
 	tri tri0(p0, p1, p2);
+	tri0.SetPid(sids);
 	std::cout << tri0 << std::endl;
 	return 0;
 }

@@ -15,5 +15,6 @@ if (USE_GEOMETRY)
                 Geometry/point.h
                 Geometry/polygon.h
                 Geometry/triangle.h
+                Geometry/surface.h
         )
 endif()

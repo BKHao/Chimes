@@ -15,7 +15,7 @@ namespace Chimes
         {
         public:
             //Initialize the polygon with no ponit.
-            SimplePolygon() :points_(0), state_(0)
+            SimplePolygon() :points_(0), state_(0), pids_(nullptr)
             {
 
             }
@@ -23,7 +23,7 @@ namespace Chimes
             //The point data is not saved.
             SimplePolygon(const std::vector<std::shared_ptr<P>>& points) :points_(points), state_(1)
             {
-
+                
             }
             //Initialize the polygon with an array of pointer.
             //The point data is not saved.
@@ -83,11 +83,19 @@ namespace Chimes
                 else
                     return nullptr;
             }
+            //Set the id of the points. Believe the data is correct.
+            void SetPid(std::shared_ptr<int>& pids)
+            {
+                pids_ = pids;
+                state_ |= S_PID;
+            }
             //Get the id of the i-th point.
             int Pid(size_t i) const
             {
+                if (!(state_ & S_PID))
+                    std::runtime_error("Pid has not been set.");
                 if (i < points_.size())
-                    return points_[i]->id();
+                    return pids_.get()[i];
                 else
                     return -1;
             }
@@ -100,7 +108,9 @@ namespace Chimes
             std::vector<std::shared_ptr<P>> points_;
             static const unsigned int S_COMPLETE = 1;
             static const unsigned int S_PROCESSING = 1 << 1;
+            static const unsigned int S_PID = 1 << 2;
             unsigned int state_;
+            std::shared_ptr<int> pids_;
         };
         //Convex polygon, inherited from SimplexPolygon.
         template <typename P>

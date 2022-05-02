@@ -42,7 +42,7 @@ namespace Chimes
         template <typename P>
         inline std::ostream& operator<<(std::ostream& os, const Triangle<P>& t)
         {
-            os << t.points_[0]->id() << " " << t.points_[1]->id() << " " << t.points_[2]->id();
+            os << t.Pid(0) << " " << t.Pid(1) << " " << t.Pid(2);
             return os;
         }
     }
