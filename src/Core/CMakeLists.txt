@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.17)
 
 set(Chimes_Core_SRC        
         numerical.cpp
+        MemoryPool/memory_common.cpp
+        MemoryPool/page_cache.cpp
+        MemoryPool/central_cache.cpp
+        MemoryPool/thread_cache.cpp        
         )
 
 

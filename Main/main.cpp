@@ -1,4 +1,5 @@
 #include <Chimes/Optimization/steepest_descent.h>
+#include <Chimes/Core/MemoryPool/memory_common.h>
 #include <functional>
 #include <memory>
 
