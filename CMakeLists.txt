@@ -19,7 +19,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 option(USE_OPTIMIZATION "use the optimization model" ON)
-option(USE_GEOMETRY "use the geometry model" ON)
 
 if (USE_OPTIMIZATION)
     find_package(Eigen3 REQUIRED)
@@ -42,14 +41,10 @@ if(WIN32 AND NOT MINGW)
   endif()
 endif()
 
-set(CHIMES_LIBS)
+set(CHIMES_LIBS Core)
 
 if (USE_OPTIMIZATION)
   list(APPEND CHIMES_LIBS Optimization)
-endif()
-
-if (USE_GEOMETRY)
-  list(APPEND CHIMES_LIBS Geometry)
 endif()
 
 add_subdirectory(include)

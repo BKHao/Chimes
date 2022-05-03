@@ -1,9 +1,4 @@
-
 #include <Chimes/Optimization/steepest_descent.h>
-#include <Chimes/Geometry/point.h>
-#include <Chimes/Geometry/polygon.h>
-#include <Chimes/Geometry/triangle.h>
-//#include <Chimes/Geometry/surface.h>
 #include <functional>
 #include <memory>
 
@@ -30,29 +25,7 @@ void test_steepest_descent()
 
 int main(int argv, char* argc[])
 {
-	using point2 = Chimes::geometry::Point2<double>;
-	using point3 = Chimes::geometry::Point3<double>;
-	using polygon = Chimes::geometry::ConvexPolygon<point2>;
-	using tri = Chimes::geometry::Triangle<point2>;
-	point2 p0(0, 0);
-	point2 p1(1, 0);
-	point2 p2(1, 1);
-	point2 p3(0, 1);
-	polygon poly;
-	poly.Start();
-	poly.Insert(p0);
-	poly.Insert(p1);
-	poly.Insert(p2);
-	poly.Insert(p3);
-	poly.End();
-	std::cout << poly.MassCenter() << std::endl;
-	int* ids = new int[3];
-	ids[0] = 0;
-	ids[1] = 1;
-	ids[2] = 2;
-	std::shared_ptr<int> sids(ids, [](int* p) {delete[] p; });
-	tri tri0(p0, p1, p2);
-	tri0.SetPid(sids);
-	std::cout << tri0 << std::endl;
+	test_steepest_descent();
+	std::cout << "Success!" << std::endl;
 	return 0;
 }
