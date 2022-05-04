@@ -1,6 +1,7 @@
 // 04/05/2022 by BKHao in Chimes.
 
 #include "Chimes/Core/MemoryPool/central_cache.h"
+#include "Chimes/Core/MemoryPool/page_cache.h"
 
 namespace Chimes
 {
@@ -27,8 +28,7 @@ namespace Chimes
 				span = span->next_;
 		}
 
-		// TODO: PageCache NewSpan
-		Span* newspan = nullptr;
+		Span* newspan = PageCache::GetInstance().NewSpan(MemoryAlign::PageNumberNeedMove(byte_size));
 		// TODO: reinterpret_cast?
 		char* cur = (char*)(newspan->pageid_ << MemoryAlign::PAGE_SHIFE);
 		char* end = cur + (newspan->npage_ << MemoryAlign::PAGE_SHIFE);
@@ -86,15 +86,14 @@ namespace Chimes
 		while (start)
 		{
 			void* next = MemoryAlign::next_block(start);
-			// TODO: PageCache MapBlockToSpan
-			Span* span = nullptr;
+			Span* span = PageCache::GetInstance().BlockToSpan(start);
 			MemoryAlign::next_block(start) = span->list_;
 			span->list_ = start;
 
 			if (--span->usecount_ == 0)
 			{
 				spanlist.Erase(span);
-				// TODO: PageCache TakebackSpan
+				PageCache::GetInstance().TakebackSpan(span);
 			}
 			start = next;
 		}

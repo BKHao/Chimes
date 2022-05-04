@@ -8,13 +8,13 @@ namespace Chimes
 	class MemoryAlign
 	{
 	public:
-		inline static void*& next_block(void* block);
-		inline static size_t Index(size_t byte_size);
-		inline static size_t Roundup(size_t byte_size);
-		inline static size_t BlockNumberNeedMove(size_t byte_size);
-		inline static size_t PageNumberNeedMove(size_t byte_size);
-		inline static size_t Index(size_t byte_size, size_t align);
-		inline static size_t Roundup(size_t byte_size, size_t align);
+		static void*& next_block(void* block);
+		static size_t Index(size_t byte_size);
+		static size_t Roundup(size_t byte_size);
+		static size_t BlockNumberNeedMove(size_t byte_size);
+		static size_t PageNumberNeedMove(size_t byte_size);
+		static size_t Index(size_t byte_size, size_t align);
+		static size_t Roundup(size_t byte_size, size_t align);
 
 	public:
 		static const size_t MAX_BYTES;
@@ -80,7 +80,7 @@ namespace Chimes
 		void Insert(Span* cur, Span* newspan);
 
 		void Erase(Span* cur);
-		
+
 		void PushBack(Span* newspan);
 
 		void PushFront(Span* newspan);
@@ -95,4 +95,12 @@ namespace Chimes
 		Span* head_;
 		std::mutex mutex_;
 	};
+
+	struct MemoryBlock
+	{
+		void* ptr_;
+		size_t ref_count_;
+		std::mutex mutex_;
+	};
+
 } // namespace Chimes

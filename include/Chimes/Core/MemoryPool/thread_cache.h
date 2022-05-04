@@ -21,7 +21,7 @@ namespace Chimes
 
 		void* FetchFromCentralCache(size_t index, size_t byte_size);
 
-		void ReleaseLongList(BlockList* blocklist, size_t byte_size);
+		void ReleaseLongList(BlockList& blocklist, size_t byte_size);
 
 	private:
 		BlockList* blocklists_;

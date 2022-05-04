@@ -1,5 +1,6 @@
 // 04/05/2022 by BKHao in Chimes.
-//#include <memoryapi.h>
+#include <windows.h>
+#include <memoryapi.h>
 #include "Chimes/Core/MemoryPool/page_cache.h"
 
 namespace Chimes
@@ -16,9 +17,9 @@ namespace Chimes
 	}
 	Span* PageCache::AllocateBigPageBlock(size_t byte_size)
 	{
-#ifdef DEBUG
+#ifdef _DEBUG
 		assert(byte_size > MemoryAlign::MAX_BYTES);
-#endif // DEBUG
+#endif // _DEBUG
 		byte_size = MemoryAlign::Roundup(byte_size, MemoryAlign::PAGE_SHIFE);
 		size_t npage = byte_size >> MemoryAlign::PAGE_SHIFE;
 		if (npage < MemoryAlign::NPAGES)
@@ -29,9 +30,7 @@ namespace Chimes
 		}
 		else
 		{
-			// TODO: Virtual
-			void* ptr;
-			//void* ptr = VirtualAlloc(0, npage << MemoryAlign::PAGE_SHIFE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+			void* ptr = VirtualAlloc(0, npage << MemoryAlign::PAGE_SHIFE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 			if (ptr == nullptr)
 				throw std::bad_alloc();
 			Span* span = new Span;
@@ -55,16 +54,15 @@ namespace Chimes
 		{
 			block_to_span_.erase(span->pageid_);
 			delete span;
-			// TODO: Virtual
-			//VirtualFree(ptr, 0, MEM_RELEASE);
+			VirtualFree(ptr, 0, MEM_RELEASE);
 		}
 	}
 	Span* PageCache::NewSpan(size_t n)
 	{
 		std::unique_lock<std::mutex> lock(mutex_);
-#ifdef DEBUG
+#ifdef _DEBUG
 		assert(n < MemoryAlign::NPAGES);
-#endif // DEBUG
+#endif // _DEBUG
 		if (!spanlists_[n].Empty())
 			return spanlists_[n].PopFront();
 		for (size_t i = n + 1; i < MemoryAlign::NPAGES; ++i)
@@ -86,9 +84,7 @@ namespace Chimes
 
 		Span* span = new Span;
 
-		// TODO: Virtual
-		void* ptr;
-		//void* ptr = VirtualAlloc(0, (MemoryAlign::NPAGES - 1) * (1 << MemoryAlign::PAGE_SHIFE), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		void* ptr = VirtualAlloc(0, (MemoryAlign::NPAGES - 1) * (1 << MemoryAlign::PAGE_SHIFE), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 		span->pageid_ = (size_t)ptr >> MemoryAlign::PAGE_SHIFE;
 		span->npage_ = MemoryAlign::NPAGES - 1;
@@ -120,9 +116,9 @@ namespace Chimes
 		}
 		else
 		{
-#ifdef DEBUG
+#ifdef _DEBUG
 			assert(false);
-#endif // DEBUG
+#endif // _DEBUG
 			return nullptr;
 		}
 	}
@@ -133,8 +129,7 @@ namespace Chimes
 		{
 			void* ptr = (void*)(cur->pageid_ << MemoryAlign::PAGE_SHIFE);
 			block_to_span_.erase(cur->pageid_);
-			// TODO: Virtual
-			//VirtualFree(ptr, 0, MEM_RELEASE);
+			VirtualFree(ptr, 0, MEM_RELEASE);
 			delete cur;
 			return;
 		}
@@ -176,5 +171,10 @@ namespace Chimes
 			cur = prev;
 		}
 		spanlists_[cur->npage_].PushFront(cur);
+	}
+
+	PageCache::PageCache()
+	{
+		spanlists_ = new SpanList[MemoryAlign::NLISTS];
 	}
 } // namespace Chimes

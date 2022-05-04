@@ -1,5 +1,5 @@
 #include <Chimes/Optimization/steepest_descent.h>
-#include <Chimes/Core/MemoryPool/memory_common.h>
+#include <Chimes/Core/MemoryPool/memory_alloc.h>
 #include <functional>
 #include <memory>
 
@@ -24,9 +24,27 @@ void test_steepest_descent()
 	std::cout << "fval: " << result.fval << "  x: " << result.res_x[0] << " " << result.res_x[1] << std::endl;
 }
 
-int main(int argv, char* argc[])
+void test_memorypool()
 {
-	test_steepest_descent();
+	Chimes::MemoryPtr<int> pData;
+	*pData = 100;
+	Chimes::MemoryPtr<int> pData2;
+	*pData2 = 200;
+	std::cout << "p1 " << *pData.Get() << "  p2 " << *pData2.Get() << std::endl;
+	pData2 = pData;
+	Chimes::MemoryPtr<int> pData3;
+	std::cout << "p1 " << *pData.Get() << "  p2 " << *pData2.Get() << "  p3 " << *pData3.Get() << std::endl;
+	Chimes::MemoryPtr<int> pData4(std::move(pData3));
+	std::cout << "p1 " << *pData.Get() << "  p2 " << *pData2.Get() << "  p4 " << *pData4.Get() << std::endl;
+	Chimes::MemoryPtr<int> pArray(3);
+	pArray[0] = 100;
+	pArray[1] = 200;
+	pArray[2] = 300;
+	std::cout << *pArray << "  " << *(pArray.Get() + 1) << "  " << pArray[2] << std::endl;
+}
+
+int main(int argv, char* argc[])
+{	
 	std::cout << "Success!" << std::endl;
 	return 0;
 }

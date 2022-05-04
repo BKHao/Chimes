@@ -7,6 +7,7 @@ set(Chimes_HEADERS
         Core/MemoryPool/page_cache.h
         Core/MemoryPool/central_cache.h
         Core/MemoryPool/thread_cache.h
+        Core/MemoryPool/memory_alloc.h
         
 )
 

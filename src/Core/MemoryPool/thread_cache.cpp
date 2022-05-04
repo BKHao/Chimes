@@ -1,5 +1,6 @@
 // 03/05/2022 by BKHao in Chimes.
 #include "Chimes/Core/MemoryPool/thread_cache.h"
+#include "Chimes/Core/MemoryPool/central_cache.h"
 
 namespace Chimes
 {
@@ -32,7 +33,7 @@ namespace Chimes
 		if (blocklist.Size() >= blocklist.MaxSize())
 		{
 			// TODO: reference or point?
-			ReleaseLongList(&blocklist, byte_size);
+			ReleaseLongList(blocklist, byte_size);
 		}
 	}
 
@@ -56,23 +57,22 @@ namespace Chimes
 		void* start = nullptr;
 		void* end = nullptr;
 
-		// TODO: CentralCache FetchRangeBlock
-		size_t blocksize = 0;
+		size_t blocksize = CentralCache::GetInstance().FecthListBlock(start, end, needNumber, byte_size);
 		if (blocksize > 1)
 		{
 			blocklist.PushList(MemoryAlign::next_block(start), end, blocksize - 1);
 		}
 		if (blocksize >= maxsize)
 		{
-			blocklist.SetMaxSize(maxsize);
+			blocklist.SetMaxSize(maxsize + 1);
 		}
 		return start;
 
 	}
 
-	void ThreadCache::ReleaseLongList(BlockList* blocklist, size_t byte_size)
+	void ThreadCache::ReleaseLongList(BlockList& blocklist, size_t byte_size)
 	{
-		void* start = blocklist->PopList();
-		//TODO: CentralCache ReleaseListToSpan
+		void* start = blocklist.PopList();
+		CentralCache::GetInstance().TakebackBlocklist(start, byte_size);
 	}
 } // namespace Chimes

@@ -8,16 +8,16 @@ namespace Chimes
 	const size_t MemoryAlign::PAGE_SHIFE = 12;
 	const size_t MemoryAlign::NPAGES = 129;
 
-	inline void*& next_block(void* block)
+	void*& MemoryAlign::next_block(void* block)
 	{
 		return *((void**)block);
 	}
 
-	inline size_t MemoryAlign::Index(size_t byte_size)
+	size_t MemoryAlign::Index(size_t byte_size)
 	{
-#ifdef DEBUG
+#ifdef _DEBUG
 		assert(byte_size <= MAX_BYTES);
-#endif // DEBUG
+#endif // _DEBUG
 		if (byte_size <= 128)
 		{
 			return Index(byte_size, 3);
@@ -35,11 +35,11 @@ namespace Chimes
 			return Index(byte_size - 8192, 10) + 128;
 		}
 	}
-	inline size_t MemoryAlign::Roundup(size_t byte_size)
+	size_t MemoryAlign::Roundup(size_t byte_size)
 	{
-#ifdef DEBUG
+#ifdef _DEBUG
 		assert(byte_size <= MAX_BYTES);
-#endif // DEBUG
+#endif // _DEBUG
 		if (byte_size <= 128)
 		{
 			return Roundup(byte_size, 3);
@@ -57,7 +57,7 @@ namespace Chimes
 			return Index(byte_size, 10);
 		}
 	}
-	inline size_t MemoryAlign::BlockNumberNeedMove(size_t byte_size)
+	size_t MemoryAlign::BlockNumberNeedMove(size_t byte_size)
 	{
 		if (byte_size == 0)
 		{
@@ -74,7 +74,7 @@ namespace Chimes
 		}
 		return num;
 	}
-	inline size_t MemoryAlign::PageNumberNeedMove(size_t byte_size)
+	size_t MemoryAlign::PageNumberNeedMove(size_t byte_size)
 	{
 		size_t num = BlockNumberNeedMove(byte_size);
 		size_t npage = num * byte_size;
@@ -84,12 +84,12 @@ namespace Chimes
 			return 1;
 		return npage;
 	}
-	inline size_t MemoryAlign::Index(size_t byte_size, size_t align)
+	size_t MemoryAlign::Index(size_t byte_size, size_t align)
 	{
 		size_t alignnum = 1 << align;
 		return (byte_size + alignnum - 1) & (~(alignnum - 1));
 	}
-	inline size_t MemoryAlign::Roundup(size_t size, size_t align)
+	size_t MemoryAlign::Roundup(size_t size, size_t align)
 	{
 		size_t alignnum = 1 << align;
 		return (size + alignnum - 1) & (~(alignnum - 1));
