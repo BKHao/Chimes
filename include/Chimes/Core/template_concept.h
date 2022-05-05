@@ -1,5 +1,6 @@
 #pragma once
 #include <Chimes/Core/numerical.h>
+#include <iostream>
 namespace Chimes
 {
     namespace geometry

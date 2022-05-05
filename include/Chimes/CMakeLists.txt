@@ -17,3 +17,13 @@ if (USE_OPTIMIZATION)
                 ptimization/steepest_descent.h
         )
 endif()
+
+if (USE_GEOMETRY)
+        list(APPEND Chimes_HEADERS
+                Geometry/geometry_object.h
+                Geometry/point.h
+                Geometry/polygon.h
+                Geometry/triangle.h
+                Geometry/surface.h
+        )
+endif()

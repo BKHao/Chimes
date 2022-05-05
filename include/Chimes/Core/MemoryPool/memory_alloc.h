@@ -18,6 +18,12 @@ namespace Chimes
 		}
 		MemoryPtr(size_t n)
 		{
+			if (n == 0)
+			{
+				block_ = nullptr;
+				ptr_ = nullptr;
+				return;
+			}
 			block_ = new MemoryBlock;
 			size_t byte_size = n * sizeof(T) + sizeof(void*);
 			if (byte_size > MemoryAlign::MAX_BYTES)
@@ -35,6 +41,7 @@ namespace Chimes
 
 		MemoryPtr(const MemoryPtr& ptr)
 		{
+			if(ptr->block_)
 			{
 				std::unique_lock<std::mutex> lock(ptr.block_->mutex_);
 				++ptr.block_->ref_count_;
@@ -53,12 +60,7 @@ namespace Chimes
 
 		~MemoryPtr()
 		{
-			if (block_ != nullptr)
-			{
-				Dereference();
-				block_ = nullptr;
-				ptr_ = nullptr;
-			}
+			Dereference();
 		}
 
 		MemoryPtr& operator=(const MemoryPtr & ptr)
@@ -98,12 +100,20 @@ namespace Chimes
 			return *(ptr_ + index);
 		}
 
+		const T& operator[](size_t index) const
+		{
+			return *(ptr_ + index);
+		}
+
 	private:
 		void Dereference()
 		{
+			if (block_ == nullptr)
+				return;
 			bool need_delete = false;
 			void* delete_ptr = nullptr;
 			{
+				// TODO: When reaching this point, the block may be nullptr under concurrency.
 				std::unique_lock<std::mutex> lock(block_->mutex_);
 				--block_->ref_count_;
 				if (block_->ref_count_ == 0)

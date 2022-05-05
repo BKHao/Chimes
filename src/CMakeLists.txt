@@ -5,3 +5,7 @@ add_subdirectory(Core)
 if (USE_OPTIMIZATION)
     add_subdirectory(Optimization)
 endif()
+
+if (USE_GEOMETRY)
+    add_subdirectory(Geometry)
+endif()

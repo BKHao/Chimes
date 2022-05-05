@@ -18,15 +18,23 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/lib)
 # include header from project_source_dir
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-option(USE_OPTIMIZATION "use the optimization model" ON)
+option(USE_OPTIMIZATION "use the optimization lib" ON)
+option(USE_GEOMETRY "use the geometry lib" ON)
+
+set(CHIMES_LIBS Core)
 
 if (USE_OPTIMIZATION)
-    find_package(Eigen3 REQUIRED)
-    if (Eigen3_FOUND)
-        message(STATUS "find Eigen3: ${EIGEN3_VERSION_STRING}")
-    else ()
-        message(SEND_ERROR "Can't find Eigen3.")
-    endif ()
+  list(APPEND CHIMES_LIBS Optimization)
+  find_package(Eigen3 REQUIRED)
+  if (Eigen3_FOUND)
+    message(STATUS "find Eigen3: ${EIGEN3_VERSION_STRING}")
+  else ()
+    message(SEND_ERROR "Can't find Eigen3.")
+  endif ()
+endif ()
+
+if (USE_OPTIMIZATION)
+  list(APPEND CHIMES_LIBS Geometry)
 endif ()
 
 if(WIN32 AND NOT MINGW)
@@ -41,11 +49,7 @@ if(WIN32 AND NOT MINGW)
   endif()
 endif()
 
-set(CHIMES_LIBS Core)
 
-if (USE_OPTIMIZATION)
-  list(APPEND CHIMES_LIBS Optimization)
-endif()
 
 add_subdirectory(include)
 add_subdirectory(src)
