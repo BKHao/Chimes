@@ -45,6 +45,21 @@ void test_memorypool()
 	std::cout << *pArray << "  " << *(pArray.Get() + 1) << "  " << pArray[2] << std::endl;
 }
 
+class Test
+{
+public:
+	Test(int in) : id(in)
+	{
+		std::cout << "Test(int in): " << in << std::endl;
+	}
+	Test(const Test& test)
+	{
+		std::cout << "Test(const Test& test): " << test.id << std::endl;
+		id = test.id;
+	}
+	int id;
+};
+
 int main(int argv, char* argc[])
 {	
 	using p3d = Chimes::geometry::Point3<double>;
@@ -61,6 +76,14 @@ int main(int argv, char* argc[])
 	std::cout << point3 << std::endl;
 	std::cin >> point2;
 	std::cout << point3 << std::endl;
+	std::cout << "======================" << std::endl;
+	std::vector<Test> arrayT(5, 3);
+	std::cout << arrayT.size() << std::endl;
+	for (size_t i = 0; i < arrayT.size(); ++i)
+	{
+		std::cout << i << " " << arrayT[i].id << std::endl;
+	}
+	
 	
 	std::cout << "Success!" << std::endl;
 	return 0;
