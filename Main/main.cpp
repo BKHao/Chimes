@@ -47,14 +47,20 @@ void test_memorypool()
 
 int main(int argv, char* argc[])
 {	
-	using p2d = Chimes::geometry::Point2<double>;
-	p2d point2;
+	using p3d = Chimes::geometry::Point3<double>;
+	p3d point2;
 	std::cout << point2 << std::endl;
-	point2(0) = 1;
-	point2(1) = 2;
+	point2[0] = 1;
+	point2[1] = 2;
 	std::cout << point2 << std::endl;
 	std::cout << point2[0] << " " << point2.y() << std::endl;
-	std::vector<int> a(5);
+	p3d point3;
+	std::cout << point3 << std::endl;
+	point3.share(point2);
+	point2[0] = 2;
+	std::cout << point3 << std::endl;
+	std::cin >> point2;
+	std::cout << point3 << std::endl;
 	
 	std::cout << "Success!" << std::endl;
 	return 0;
