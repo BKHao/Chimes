@@ -90,6 +90,11 @@ namespace Chimes
 			return ptr_;
 		}
 
+		const T* const Get() const
+		{
+			return ptr_;
+		}
+
 		T& operator*()
 		{
 			return *ptr_;

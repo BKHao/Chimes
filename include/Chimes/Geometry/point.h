@@ -86,6 +86,16 @@ namespace Chimes
                 Base::coordinates_[Base::cursor_] = 0;
                 Base::coordinates_[Base::cursor_ + 1] = 0;
             }
+            //The initialized with a size_t argment n, if n <= 0, it will not allocate memory.
+            Point2(size_t n) : Base(0)
+            {
+                if (n > 0)
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(2);
+                    Base::coordinates_[Base::cursor_] = 0;
+                    Base::coordinates_[Base::cursor_ + 1] = 0;
+                }
+            }
             //The coordinates are initialized to (a, b).
             Point2(const Real& a, const Real& b) : Base(2)
             {
@@ -109,17 +119,29 @@ namespace Chimes
                 return *this;
             }
             //Initialize with the coordinates of another 2D point p.
-            Point2(const Point2& p) : Point2(p.x(), p.y())
+            Point2(const Point2& p) : Base(0)
             {
-                
+                if (p.coordinates_.Get())
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(2);
+                    Base::coordinates_[0] = p.x();
+                    Base::coordinates_[1] = p.y();
+                }
             }
             //Initialize with the coordinates of another 2D point p.
             Point2& operator=(const Point2& p)
             {
-                Base::coordinates_ = MemoryPtr<Real>(2);
                 Base::cursor_ = 0;
-                Base::coordinates_[0] = p.x();
-                Base::coordinates_[1] = p.y();
+                if (p.coordinates_.Get())
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(2);
+                    Base::coordinates_[0] = p.x();
+                    Base::coordinates_[1] = p.y();
+                }
+                else
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(0);
+                }                
                 return *this;
             }
             //Initialize by move constructor, move another point p to this. Please make sure that p will not be used again.
@@ -268,6 +290,17 @@ namespace Chimes
                 Base::coordinates_[Base::cursor_ + 1] = Real(0);
                 Base::coordinates_[Base::cursor_ + 2] = Real(0);
             }
+            //The initialized with a size_t argment n, if n <= 0, it will not allocate memory.
+            Point3(size_t n) :Base(0)
+            {
+                if (n > 0)
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(3);
+                    Base::coordinates_[Base::cursor_] = 0;
+                    Base::coordinates_[Base::cursor_ + 1] = 0;
+                    Base::coordinates_[Base::cursor_ + 2] = 0;
+                }
+            }
             //The coordinates are initialized to (a, b, c) by default.
             Point3(const Real& a, const Real& b, const Real& c): Base(3)
             {
@@ -298,18 +331,32 @@ namespace Chimes
                 return *this;
             }
             //Initialize with the coordinates of another 3D point p.
-            Point3(const Point3& p) : Point3(p.x(), p.y(), p.z())
+            Point3(const Point3& p) : Base(0)
             {
-
+                if (p.coordinates_.Get())
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(3);
+                    Base::cursor_ = 0;
+                    Base::coordinates_[0] = Real(p.x());
+                    Base::coordinates_[1] = Real(p.y());
+                    Base::coordinates_[2] = Real(p.z());
+                }
             }
             //Initialize with the coordinates of another 3D point p.
             Point3& operator=(const Point3& p)
             {
-                Base::coordinates_ = MemoryPtr<Real>(3);
                 Base::cursor_ = 0;
-                Base::coordinates_[0] = p.x();
-                Base::coordinates_[1] = p.y();
-                Base::coordinates_[2] = p.z();
+                if (p.coordinates_.Get())
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(3);                    
+                    Base::coordinates_[0] = p.x();
+                    Base::coordinates_[1] = p.y();
+                    Base::coordinates_[2] = p.z();
+                }
+                else
+                {
+                    Base::coordinates_ = MemoryPtr<Real>(0);                    
+                }
                 return *this;
             }
             //Initialize with the coordinates of another 2D point p, and z = 0;
