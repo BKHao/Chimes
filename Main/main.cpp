@@ -2,6 +2,7 @@
 #include <Chimes/Core/MemoryPool/memory_alloc.h>
 #include <Chimes/Geometry/point.h>
 #include <Chimes/Geometry/polygon.h>
+#include <Chimes/Geometry/triangle.h>
 #include <functional>
 #include <memory>
 #include <iostream>
@@ -74,7 +75,8 @@ int main(int argv, char* argc[])
 {	
 	using p2d = Chimes::geometry::Point2<double>;
 	using p3d = Chimes::geometry::Point3<double>;
-	using polygon = Chimes::geometry::SimplePolygon<p3d>;
+	using polygon = Chimes::geometry::ConvexPolygon<p3d>;
+	using Triangle = Chimes::geometry::Triangle<p3d>;
 	p3d point1(1, 1, 1);
 	p3d point2;
 	point2[0] = 2;
@@ -107,18 +109,23 @@ int main(int argv, char* argc[])
 		sp.share(points[i]);
 		poly_points.push_back(std::move(sp));
 	}
-	poly_points[0][2] = 200;
+	polygon poly(std::move(poly_points));
+	//poly_points[0][2] = 200;
+	points[0][2] = 200;
 
-	//polygon poly(std::move(share_points));
+	
 	for (size_t i = 0; i < 5; ++i)
 	{
 		std::cout << points[i] << std::endl;
+		std::cout << poly[i] << std::endl;
 	}
-	//points[3][2] = 100;
-	//for (size_t i = 0; i < 5; ++i)
-	//{
-	//	std::cout << poly[i] << std::endl;
-	//}
+
+	Triangle tri(p3d(0, 0, 0), p3d(1, 2, 3), p3d(0, 5, 0));
+	for (size_t i = 0; i < 3; ++i)
+	{
+		std::cout << tri[i] << std::endl;
+	}
+
 	std::cout << "======================" << std::endl;
 
 	//std::vector<Test> tests;

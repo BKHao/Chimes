@@ -14,7 +14,7 @@ namespace Chimes
             requires concept_point_operater<P>&& concept_point_normal<P>
         class SimplePolygon : public GeometryObject
         {
-        private:
+        protected:
             static const unsigned int S_COMPLETE = 1;
             static const unsigned int S_PROCESSING = 1 << 1;
             static const unsigned int S_PID = 1 << 2;
@@ -23,6 +23,11 @@ namespace Chimes
             SimplePolygon() :points_(0), state_(0), pids_(0)
             {
 
+            }
+            //Initialize the polygon with no ponit, but reserve n points capacity.
+            SimplePolygon(size_t n) :points_(0), state_(0), pids_(0)
+            {
+                points_.reserve(n);
             }
             //Initialize the polygon with an array of points.
             //The point data is saved.
@@ -129,6 +134,32 @@ namespace Chimes
             std::vector<P> points_;
             unsigned int state_;
             MemoryPtr<size_t> pids_;
+        };
+
+        //Convex polygon, inherited from SimplexPolygon.
+        template <typename P>
+        class ConvexPolygon : public SimplePolygon<P>
+        {
+        private:
+            using Base = SimplePolygon<P>;
+        public:
+            using Base::Base;
+            //Return the mass center of the convex polygon.
+            P MassCenter() const
+            {
+                P c = Base::points_[0];
+                for (size_t i = 1; i < Base::points_.size(); ++i)
+                {
+                    c += *Base::points_[i];
+                }
+                return (c / P::R(Base::points_.size()));
+            }
+            //Return the geometry type.
+            virtual GeometryType Info() const
+            {
+                return GeometryType::CONVEX_POLYGON;
+            }
+
         };
 	} // namespace geometry
 } // namespace Chimes
