@@ -1,6 +1,7 @@
 #include <Chimes/Optimization/steepest_descent.h>
 #include <Chimes/Core/MemoryPool/memory_alloc.h>
 #include <Chimes/Geometry/point.h>
+#include <Chimes/Geometry/polygon.h>
 #include <functional>
 #include <memory>
 #include <iostream>
@@ -45,30 +46,90 @@ void test_memorypool()
 	std::cout << *pArray << "  " << *(pArray.Get() + 1) << "  " << pArray[2] << std::endl;
 }
 
+class Test
+{
+public:
+	Test() :id(-1)
+	{
+		std::cout << "default Test() " << id << std::endl;
+	}
+	Test(int i) :id(i)
+	{
+		std::cout << "int Test(int i) " << id << std::endl;
+	}
+	Test(const Test& test)
+	{
+		id = test.id;
+		std::cout << "copy Test(const Test& test) " << id << std::endl;
+	}
+	Test(Test&& test)
+	{
+		id = test.id;
+		std::cout << "move Test(Test&& test) " << id << std::endl;
+	}
+	int id;
+};
 
 int main(int argv, char* argc[])
 {	
 	using p2d = Chimes::geometry::Point2<double>;
 	using p3d = Chimes::geometry::Point3<double>;
+	using polygon = Chimes::geometry::SimplePolygon<p3d>;
+	p3d point1(1, 1, 1);
 	p3d point2;
-	std::cout << point2 << std::endl;
-	point2[0] = 1;
-	point2[1] = 2;
-	std::cout << point2 << std::endl;
-	std::cout << point2[0] << " " << point2.y() << std::endl;
-	p3d point3;
-	std::cout << point3 << std::endl;
-	point3.share(point2);
 	point2[0] = 2;
-	std::cout << point3 << std::endl;
-	std::cin >> point2;
-	std::cout << point3 << std::endl;
+	point2[1] = 2;
+	point2[2] = 2;
+	p3d point3(3, 3, 3);
 	p3d point4(0);
 	p3d point5(point4);
-	point4 = point3;
-	std::cout << point4 << std::endl;
-	std::vector<p2d> points(5, 0);
+	point4 = p3d(4, 4, 4);
+	point5 = p3d(5, 5, 5);
+	std::vector<p3d> points;
+	points.push_back(point1);
+	points.push_back(point2);
+	points.push_back(point3);
+	points.push_back(point4);
+	points.push_back(point5);
+	for (size_t i = 0; i < 5; ++i)
+	{
+		std::cout << points[i] << std::endl;
+	}
+	//std::vector<p3d> share_points(5, 0);
+	//for (size_t i = 0; i < 5; ++i)
+	//{
+	//	share_points[i].share(points[i]);
+	//}
+	std::vector<p3d> poly_points;
+	for (size_t i = 0; i < 5; ++i)
+	{
+		p3d sp(0);
+		sp.share(points[i]);
+		poly_points.push_back(std::move(sp));
+	}
+	poly_points[0][2] = 200;
+
+	//polygon poly(std::move(share_points));
+	for (size_t i = 0; i < 5; ++i)
+	{
+		std::cout << points[i] << std::endl;
+	}
+	//points[3][2] = 100;
+	//for (size_t i = 0; i < 5; ++i)
+	//{
+	//	std::cout << poly[i] << std::endl;
+	//}
 	std::cout << "======================" << std::endl;
+
+	//std::vector<Test> tests;
+	////tests.reserve(2);
+
+	//Test test;
+	//Test test2(1);	
+	//std::cout << "====================push back 1" << std::endl;
+	//tests.push_back(test);
+	//std::cout << "====================push back 2" << std::endl;	
+	//tests.push_back(std::move(test2));
 		
 	std::cout << "Success!" << std::endl;
 	return 0;

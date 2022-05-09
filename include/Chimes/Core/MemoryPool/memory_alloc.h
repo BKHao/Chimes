@@ -50,7 +50,7 @@ namespace Chimes
 			block_ = ptr.block_;
 		}
 
-		MemoryPtr(MemoryPtr&& ptr)
+		MemoryPtr(MemoryPtr&& ptr) noexcept
 		{
 			ptr_ = ptr.ptr_;
 			block_ = ptr.block_;
@@ -75,7 +75,7 @@ namespace Chimes
 			return *this;
 		}
 
-		MemoryPtr& operator=(MemoryPtr&& ptr)
+		MemoryPtr& operator=(MemoryPtr&& ptr) noexcept
 		{
 			Dereference();
 			block_ = ptr.block_;

@@ -108,7 +108,7 @@ namespace Chimes
             {
 
             }
-            //Initialize with the coordinates of another 2D point p.
+            //Assign with the coordinates of another 2D point p.
             template <typename R2>
             Point2& operator=(const Point2<R2>& p)
             {
@@ -128,7 +128,7 @@ namespace Chimes
                     Base::coordinates_[1] = p.y();
                 }
             }
-            //Initialize with the coordinates of another 2D point p.
+            //Assign with the coordinates of another 2D point p.
             Point2& operator=(const Point2& p)
             {
                 Base::cursor_ = 0;
@@ -145,13 +145,13 @@ namespace Chimes
                 return *this;
             }
             //Initialize by move constructor, move another point p to this. Please make sure that p will not be used again.
-            Point2(Point2<Real>&& p)
+            Point2(Point2<Real>&& p) noexcept
             {
                 Base::coordinates_ = std::move(p.coordinates_);
                 Base::cursor_ = p.cursor_;
             }
             //Assign by move, move another point p to this. Please make sure that p will not be used again.
-            Point2& operator=(Point2&& p)
+            Point2& operator=(Point2&& p) noexcept
             {
                 Base::coordinates_ = std::move(p.coordinates_);
                 Base::cursor_ = p.cursor_;
@@ -366,13 +366,14 @@ namespace Chimes
                 
             }
             //Initialize by move constructor, move another point p to this. Please make sure that p will not be used again.
-            Point3(Point3<Real>&& p) noexcept
+            Point3(Point3&& p) noexcept
             {
+                
                 Base::coordinates_ = std::move(p.coordinates_);
                 Base::cursor_ = p.cursor_;
             }
             //Assign by move, move another point p to this. Please make sure that p will not be used again.
-            Point3& operator=(Point3<Real>&& p) noexcept
+            Point3& operator=(Point3&& p) noexcept
             {
                 Base::coordinates_ = std::move(p.coordinates_);
                 Base::cursor_ = p.cursor_;
