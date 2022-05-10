@@ -110,9 +110,10 @@ namespace Chimes
                     throw std::runtime_error("out of the range");
             }
             //Set the id of the points. Believe the data is correct.
-            void SetPid(const MemoryPtr<size_t>& pids)
+            void SetPid(const MemoryPtr<size_t>& pids, size_t cursor)
             {
                 pids_ = pids;
+                cursor_ = cursor;
                 state_ |= S_PID;
             }
             //Get the id of the i-th point.
@@ -121,7 +122,7 @@ namespace Chimes
                 if (!(state_ & S_PID))
                     throw std::runtime_error("Pid has not been set.");
                 if (i < points_.size())
-                    return pids_[i];
+                    return pids_[cursor_ + i];
                 else
                     return -1;
             }
@@ -134,6 +135,7 @@ namespace Chimes
             std::vector<P> points_;
             unsigned int state_;
             MemoryPtr<size_t> pids_;
+            size_t cursor_;
         };
 
         //Convex polygon, inherited from SimplexPolygon.

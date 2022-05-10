@@ -3,6 +3,7 @@
 #include <Chimes/Core/template_concept.h>
 #include <Chimes/Geometry/geometry_object.h>
 #include <Chimes/Geometry/triangle.h>
+#include <fstream>
 
 namespace Chimes
 {
@@ -52,7 +53,7 @@ namespace Chimes
         public:
             //Load from file.
             //The data is saved.
-            TriangleMesh(const std::string& file) :index_data_(0), triangles_(0)
+            TriangleMesh(const std::string& file) : Base(), index_data_(0), triangles_(0)
             {
                 load_from_obj(file);
             }
@@ -62,11 +63,11 @@ namespace Chimes
                 std::ofstream out(path_name);
                 for (size_t i = 0; i < Base::vertices_.size(); ++i)
                 {
-                    out << "v " << *Base::vertices_[i] << std::endl;
+                    out << "v " << Base::vertices_[i] << std::endl;
                 }
-                for (size_t i = 0; i < _triangles.size(); ++i)
+                for (size_t i = 0; i < triangles_.size(); ++i)
                 {
-                    out << "f " << _triangles[i]->pid(0) + 1 << " " << _triangles[i]->pid(1) + 1 << " " << _triangles[i]->pid(2) + 1 << std::endl;
+                    out << "f " << triangles_[i].Pid(0) + 1 << " " << triangles_[i].Pid(1) + 1 << " " << triangles_[i].Pid(2) + 1 << std::endl;
                 }
                 out.close();
                 return true;
@@ -114,16 +115,36 @@ namespace Chimes
                         scream_line >> id0 >> id1;
                         while (scream_line >> idx)
                         {
-                            index_xyz.push_back(id0);
-                            index_xyz.push_back(id1);
-                            index_xyz.push_back(idx);
+                            index_xyz.push_back(id0 - 1);
+                            index_xyz.push_back(id1 - 1);
+                            index_xyz.push_back(idx - 1);
                         }
                     }
                 }
+                in.close();
                 Base::vertex_data_ = MemoryPtr<Real>(points_xyz.size());
                 index_data_ = MemoryPtr<size_t>(index_xyz.size());
-                
-                in.close();
+                Base::vertices_.reserve(points_xyz.size() / 3);
+                for (size_t i = 0; i < points_xyz.size(); i += 3)
+                {
+                    Base::vertex_data_[i] = points_xyz[i];
+                    Base::vertex_data_[i + 1] = points_xyz[i + 1];
+                    Base::vertex_data_[i + 2] = points_xyz[i + 2];                    
+                    Base::vertices_.emplace_back(P(Base::vertex_data_, i));
+                }
+                triangles_.reserve(index_xyz.size() / 3);
+                for (size_t i = 0; i < index_xyz.size(); i += 3)
+                {
+                    index_data_[i] = index_xyz[i];
+                    index_data_[i + 1] = index_xyz[i + 1];
+                    index_data_[i + 2] = index_xyz[i + 2];
+                    std::vector<P> tri_points(3, 0);
+                    tri_points[0].share(Base::vertices_[index_data_[i]]);
+                    tri_points[1].share(Base::vertices_[index_data_[i + 1]]);
+                    tri_points[2].share(Base::vertices_[index_data_[i + 2]]);
+                    triangles_.emplace_back(Tri(std::move(tri_points)));
+                    triangles_.back().SetPid(index_data_, i);
+                }                
                 return true;
             }
         protected:

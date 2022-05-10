@@ -1,6 +1,7 @@
 // 09/05/2022 by BKHao in Chimes.
 #pragma once
 #include <Chimes/Geometry/polygon.h>
+#include <vector>
 namespace Chimes
 {
 	namespace geometry
@@ -13,6 +14,12 @@ namespace Chimes
         private:
             using Base = ConvexPolygon<P>;
         public:
+            using Base::Base;
+            //Default constructor with doing nothing.
+            Triangle() : Base(0)
+            {
+
+            }
             //Use (p0,p1,p2) to initialize the points.
             //The point data is saved.
             Triangle(const P& p0, const P& p1, const P& p2) :Base(3)
@@ -32,6 +39,14 @@ namespace Chimes
                 Base::points_.push_back(std::move(p1));
                 Base::points_.push_back(std::move(p2));
                 Base::state_ = Base::S_COMPLETE;
+            }
+            //Initialize with the another triangle.
+            Triangle(Triangle&& tri) noexcept
+            {
+                Base::points_ = std::move(tri.points_);
+                Base::pids_ = std::move(tri.pids_);
+                Base::cursor_ = tri.cursor_;
+                Base::state_ = tri.state_;
             }
             //Return the geometry type.
             virtual GeometryType Info() const

@@ -3,6 +3,7 @@
 #include <Chimes/Geometry/point.h>
 #include <Chimes/Geometry/polygon.h>
 #include <Chimes/Geometry/triangle.h>
+#include <Chimes/Geometry/surface.h>
 #include <functional>
 #include <memory>
 #include <iostream>
@@ -73,59 +74,63 @@ public:
 
 int main(int argv, char* argc[])
 {	
-	using p2d = Chimes::geometry::Point2<double>;
-	using p3d = Chimes::geometry::Point3<double>;
-	using polygon = Chimes::geometry::ConvexPolygon<p3d>;
-	using Triangle = Chimes::geometry::Triangle<p3d>;
-	p3d point1(1, 1, 1);
-	p3d point2;
-	point2[0] = 2;
-	point2[1] = 2;
-	point2[2] = 2;
-	p3d point3(3, 3, 3);
-	p3d point4(0);
-	p3d point5(point4);
-	point4 = p3d(4, 4, 4);
-	point5 = p3d(5, 5, 5);
-	std::vector<p3d> points;
-	points.push_back(point1);
-	points.push_back(point2);
-	points.push_back(point3);
-	points.push_back(point4);
-	points.push_back(point5);
-	for (size_t i = 0; i < 5; ++i)
-	{
-		std::cout << points[i] << std::endl;
-	}
-	//std::vector<p3d> share_points(5, 0);
+	using P2d = Chimes::geometry::Point2<double>;
+	using P3d = Chimes::geometry::Point3<double>;
+	using Polygon = Chimes::geometry::ConvexPolygon<P3d>;
+	using Triangle = Chimes::geometry::Triangle<P3d>;
+	using Mesh = Chimes::geometry::TriangleMesh<P3d>;
+	//p3d point1(1, 1, 1);
+	//p3d point2;
+	//point2[0] = 2;
+	//point2[1] = 2;
+	//point2[2] = 2;
+	//p3d point3(3, 3, 3);
+	//p3d point4(0);
+	//p3d point5(point4);
+	//point4 = p3d(4, 4, 4);
+	//point5 = p3d(5, 5, 5);
+	//std::vector<p3d> points;
+	//points.push_back(point1);
+	//points.push_back(point2);
+	//points.push_back(point3);
+	//points.push_back(point4);
+	//points.push_back(point5);
 	//for (size_t i = 0; i < 5; ++i)
 	//{
-	//	share_points[i].share(points[i]);
+	//	std::cout << points[i] << std::endl;
 	//}
-	std::vector<p3d> poly_points;
-	for (size_t i = 0; i < 5; ++i)
-	{
-		p3d sp(0);
-		sp.share(points[i]);
-		poly_points.push_back(std::move(sp));
-	}
-	polygon poly(std::move(poly_points));
-	//poly_points[0][2] = 200;
-	points[0][2] = 200;
+	////std::vector<p3d> share_points(5, 0);
+	////for (size_t i = 0; i < 5; ++i)
+	////{
+	////	share_points[i].share(points[i]);
+	////}
+	//std::vector<p3d> poly_points;
+	//for (size_t i = 0; i < 5; ++i)
+	//{
+	//	p3d sp(0);
+	//	sp.share(points[i]);
+	//	poly_points.push_back(std::move(sp));
+	//}
+	//polygon poly(std::move(poly_points));
+	////poly_points[0][2] = 200;
+	//points[0][2] = 200;
 
-	
-	for (size_t i = 0; i < 5; ++i)
-	{
-		std::cout << points[i] << std::endl;
-		std::cout << poly[i] << std::endl;
-	}
+	//
+	//for (size_t i = 0; i < 5; ++i)
+	//{
+	//	std::cout << points[i] << std::endl;
+	//	std::cout << poly[i] << std::endl;
+	//}
 
-	Triangle tri(p3d(0, 0, 0), p3d(1, 2, 3), p3d(0, 5, 0));
-	for (size_t i = 0; i < 3; ++i)
-	{
-		std::cout << tri[i] << std::endl;
-	}
+	//Triangle tri(p3d(0, 0, 0), p3d(1, 2, 3), p3d(0, 5, 0));
+	//for (size_t i = 0; i < 3; ++i)
+	//{
+	//	std::cout << tri[i] << std::endl;
+	//}
 
+	Mesh mesh("cube.obj");
+	std::cout << mesh.NumberOfFaces() << std::endl;
+	mesh.save("cube2.obj");
 	std::cout << "======================" << std::endl;
 
 	//std::vector<Test> tests;

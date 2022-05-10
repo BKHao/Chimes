@@ -379,6 +379,11 @@ namespace Chimes
                 Base::cursor_ = p.cursor_;
                 return *this;
             }
+            Point3(const MemoryPtr<Real>& coordinate, size_t cursur): Base(0)
+            {
+                Base::coordinates_ = coordinate;
+                Base::cursor_ = cursur;
+            }
             //Assign by share with another p, like move but p is still exit.
             void share(const Point3& p)
             {

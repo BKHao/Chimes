@@ -87,7 +87,7 @@ namespace Chimes
 	size_t MemoryAlign::Index(size_t byte_size, size_t align)
 	{
 		size_t alignnum = 1 << align;
-		return (byte_size + alignnum - 1) & (~(alignnum - 1));
+		return ((byte_size + alignnum - 1) >> align) - 1;
 	}
 	size_t MemoryAlign::Roundup(size_t size, size_t align)
 	{
