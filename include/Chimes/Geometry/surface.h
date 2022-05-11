@@ -34,9 +34,15 @@ namespace Chimes
             {
                 return vertices_.size();
             }
+            // Return the vertex buffer data.
             MemoryPtr<Real> Vertex_Data()
             {
                 return vertex_data_;
+            }
+            // Return the i_th vertex.
+            const P& Vertex(size_t i) const
+            {
+                return vertices_[i];
             }
         protected:
             MemoryPtr<Real> vertex_data_;
@@ -77,9 +83,15 @@ namespace Chimes
             {
                 return GeometryType::TRIANGLE_MESH;
             }
+            //Return the number of triangles.
             size_t NumberOfFaces() const
             {
                 return triangles_.size();
+            }
+            // Return the i_th triangle.
+            const Tri& Face(size_t i) const
+            {
+                return triangles_[i];
             }
         protected:
             //Load mesh from obj file.

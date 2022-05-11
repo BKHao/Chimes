@@ -89,12 +89,13 @@ int main(int argv, char* argc[])
 	//p3d point5(point4);
 	//point4 = p3d(4, 4, 4);
 	//point5 = p3d(5, 5, 5);
-	//std::vector<p3d> points;
-	//points.push_back(point1);
-	//points.push_back(point2);
-	//points.push_back(point3);
-	//points.push_back(point4);
-	//points.push_back(point5);
+	std::vector<P3d> points;
+	points.push_back(P3d(0, 0, 0));
+	points.push_back(P3d(1, 1, 1));
+	points.push_back(P3d(2, 2, 2));
+	points.push_back(P3d(3, 3, 3));
+	points.push_back(P3d(4, 4, 4));
+	std::vector<P3d>::iterator iter_point = points.begin();
 	//for (size_t i = 0; i < 5; ++i)
 	//{
 	//	std::cout << points[i] << std::endl;
@@ -128,11 +129,10 @@ int main(int argv, char* argc[])
 	//	std::cout << tri[i] << std::endl;
 	//}
 
-	Mesh mesh("cube.obj");
+	Mesh mesh("sphere.obj");
 	std::cout << mesh.NumberOfFaces() << std::endl;
-	mesh.save("cube2.obj");
+	mesh.save("sphere2.obj");
 	std::cout << "======================" << std::endl;
-
 	//std::vector<Test> tests;
 	////tests.reserve(2);
 

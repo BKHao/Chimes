@@ -41,13 +41,26 @@ namespace Chimes
             {
                 
             }
+            //Copy construct the polygon with another polygon.
+            //The point data is saved but don't set pid.
+            SimplePolygon(const SimplePolygon& polygon): points_(polygon.points_), state_(S_COMPLETE), pids_(0), cursor_(0)
+            {
+                
+            }
+            //Move construct the polygon with another polygon.
+            // The point data is not saved.
+            SimplePolygon(SimplePolygon&& polygon) : points_(std::move(polygon.points_)), state_(polygon.state_), pids_(std::move(polygon.pids_)), cursor_(polygon.cursor_)
+            {
+                
+            }
             //Assign the polygon with another polygon.
             //The point data is saved.
             SimplePolygon& operator=(const SimplePolygon& polygon)
             {
                 points_ = polygon.points_;
-                pids_ = polygon.pids_;
-                state_ = polygon.state_;
+                pids_ = MemoryPtr<size_t>(0);
+                cursor_ = 0;
+                state_ = S_COMPLETE;
             }
             //Assign the polygon with another polygon.
             //The point data is not saved.
@@ -55,6 +68,7 @@ namespace Chimes
             {
                 points_ = std::move(polygon.points_);
                 pids_ = std::move(polygon.pids_);
+                cursor_ = polygon.cursor_;
                 state_ = polygon.state_;
             }
             //Start to insert the construction polygon point by point. The old data will be cleared.
