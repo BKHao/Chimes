@@ -1,6 +1,7 @@
 // 09/05/2022 by BKHao in Chimes.
 #pragma once
 #include <Chimes/Core/template_concept.h>
+#include <Chimes/Core/iterator_base.h>
 #include <Chimes/Geometry/geometry_object.h>
 #include <Chimes/Geometry/triangle.h>
 #include <fstream>
@@ -9,6 +10,37 @@ namespace Chimes
 {
 	namespace geometry
 	{
+        template <typename P>
+        class VertexIterator : public IteratorBase<P>
+        {
+        public:
+            VertexIterator(): vertex_(nullptr)
+            {
+
+            }
+            VertexIterator(const VertexIterator& vi) :vertex_(vi.vertex_)
+            {
+
+            }
+            VertexIterator(VertexIterator&& vi) :vertex_(vi.vertex_)
+            {
+
+            }
+            virtual VertexIterator& operator++()
+            {
+                vertex_++;
+                return *this;
+            }
+            virtual VertexIterator operator++(int)
+            {
+                VertexIterator tmp = *this;
+                vertex_++;
+                return tmp;
+            }
+        private:
+            P* vertex_;
+        };
+
         //The base class of polygon mesh, which contains a set of vertices and polygons. Both vertices and polygons are contiguous storage in memory.
         template <typename P>
             requires concept_point_operater<P>&& concept_point_normal<P>&& concept_point_ostream<P>&& concept_point_istream<P>&& concept_point_index<P>

@@ -96,6 +96,8 @@ int main(int argv, char* argc[])
 	points.push_back(P3d(3, 3, 3));
 	points.push_back(P3d(4, 4, 4));
 	std::vector<P3d>::iterator iter_point = points.begin();
+	std::vector<P3d>::iterator::pointer p;
+	iter_point->Norm();
 	//for (size_t i = 0; i < 5; ++i)
 	//{
 	//	std::cout << points[i] << std::endl;
