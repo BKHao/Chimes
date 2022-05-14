@@ -53,3 +53,5 @@ The example and data is in 'test'. Include Chimes in your project when testing a
 27/04/2022 Start.
 
 29/04/2022 Complete steepest descent method in Optimization.
+
+14/05/2022 Complete LBFGS in Optimization.
