@@ -95,9 +95,18 @@ int main(int argv, char* argc[])
 	points.push_back(P3d(2, 2, 2));
 	points.push_back(P3d(3, 3, 3));
 	points.push_back(P3d(4, 4, 4));
-	std::vector<P3d>::iterator iter_point = points.begin();
-	std::vector<P3d>::iterator::pointer p;
-	iter_point->Norm();
+	std::vector<P3d>::iterator iter_point = points.end();
+	//std::vector<P3d>::iterator::pointer p;
+	//iter_point->Norm();
+	//iter_point++;
+
+	//int* test_int = new int[10];
+
+	//for (int i = 0; i < 11; ++i)
+	//{
+	//	int* test_ = test_int + i;
+	//}
+
 	//for (size_t i = 0; i < 5; ++i)
 	//{
 	//	std::cout << points[i] << std::endl;
@@ -131,9 +140,15 @@ int main(int argv, char* argc[])
 	//	std::cout << tri[i] << std::endl;
 	//}
 
-	Mesh mesh("sphere.obj");
+	Mesh mesh("cube.obj");
 	std::cout << mesh.NumberOfFaces() << std::endl;
-	mesh.save("sphere2.obj");
+	mesh.save("cube2.obj");
+	auto viter = mesh.begin();
+	for (size_t i = 0; i < mesh.NumberOfVertices(); ++i)
+	{
+		std::cout << *viter << std::endl;
+		++viter;
+	}
 	std::cout << "======================" << std::endl;
 	//std::vector<Test> tests;
 	////tests.reserve(2);

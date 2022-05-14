@@ -12,9 +12,15 @@ namespace Chimes
 
 		}
 		// The next item, preincrement.
-		virtual IteratorBase& operator++() = 0;
+		IteratorBase& operator++()
+		{
+
+		}
 		// The next item, postincrement.
-		virtual IteratorBase operator++(int) = 0;
+		IteratorBase operator++(int)
+		{
+
+		}
 		// Access the current item.
 		virtual Object& operator*() = 0;
 		// Access the current item as a pointer.

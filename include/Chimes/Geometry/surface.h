@@ -26,16 +26,28 @@ namespace Chimes
             {
 
             }
-            virtual VertexIterator& operator++()
+            VertexIterator(P* vertex) :vertex_(vertex)
+            {
+                
+            }
+            VertexIterator& operator++()
             {
                 vertex_++;
                 return *this;
             }
-            virtual VertexIterator operator++(int)
+            VertexIterator operator++(int)
             {
                 VertexIterator tmp = *this;
                 vertex_++;
                 return tmp;
+            }
+            virtual P& operator*()
+            {
+                return *vertex_;
+            }
+            virtual P* operator->()
+            {
+                return vertex_;
             }
         private:
             P* vertex_;
@@ -75,6 +87,10 @@ namespace Chimes
             const P& Vertex(size_t i) const
             {
                 return vertices_[i];
+            }
+            VertexIterator<P> begin()
+            {
+                return VertexIterator<P>(vertices_.data());
             }
         protected:
             MemoryPtr<Real> vertex_data_;
@@ -125,6 +141,7 @@ namespace Chimes
             {
                 return triangles_[i];
             }
+
         protected:
             //Load mesh from obj file.
             bool load_from_obj(const std::string& file)
