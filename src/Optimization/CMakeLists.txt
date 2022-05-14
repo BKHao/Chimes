@@ -5,6 +5,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 set(Chimes_Optimization_SRC        
         line_search.cpp
         steepest_descent.cpp
+        lbfgs.cpp
         )
 
 

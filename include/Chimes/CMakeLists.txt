@@ -8,6 +8,7 @@ set(Chimes_HEADERS
 if (USE_OPTIMIZATION)
         list(APPEND Chimes_HEADERS 
                 Optimization/line_search.h 
-                ptimization/steepest_descent.h
+                Optimization/steepest_descent.h
+                Optimization/lbfgs.h
         )
 endif()

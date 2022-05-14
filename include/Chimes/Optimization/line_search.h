@@ -19,13 +19,13 @@ namespace Chimes
         class Parameter
         {
         public:
-            Parameter() :max_iteration_(1000), max_stepsearch_(100), min_step_(1e-7), min_xtol_(1e-7), min_ftol_(1e-7), epsilon_(1e-5), is_show_(true), descent_rate_(1e-4), wolfe_(0.9), max_time_(-1)
+            Parameter() :max_iteration_(1000), max_stepsearch_(100), min_step_(1e-7), min_xtol_(1e-7), min_ftol_(1e-7), epsilon_(1e-5), is_show_(true), descent_rate_(1e-4), wolfe_(0.9), max_time_(-1), lbfgs_remain_(6)
             {
                 step_search_method_ = (StepSearchMethod::WOLFE);
             }
         public:
-            int max_iteration_;
-            int max_stepsearch_;
+            size_t max_iteration_;
+            size_t max_stepsearch_;
             Scalar min_step_;
             Scalar min_xtol_;
             Scalar min_ftol_;
@@ -34,6 +34,7 @@ namespace Chimes
             Scalar descent_rate_;
             Scalar wolfe_;
             double max_time_;
+            int lbfgs_remain_;
             StepSearchMethod step_search_method_;
         };
 
@@ -43,8 +44,8 @@ namespace Chimes
             Scalar fval;
             Vector res_x;
             Vector res_gradient;
-            int iter_time;
-            int stepsearch_time;
+            size_t iter_time;
+            size_t stepsearch_time;
         };
 
     public:
@@ -58,7 +59,7 @@ namespace Chimes
             return result_;
         }
     protected:
-        int stepSearch(Scalar& fval, Vector& iter_x, Vector& gradient, Scalar& step, const Vector& direction)
+        size_t stepSearch(Scalar& fval, Vector& iter_x, Vector& gradient, Scalar& step, const Vector& direction)
         {
             if (step < Scalar(0))
             {
@@ -77,7 +78,7 @@ namespace Chimes
             const Vector ix = iter_x;
             Scalar step_l = 0;
             Scalar step_u = std::numeric_limits<Scalar>::infinity();
-            int k = 1;
+            size_t k = 1;
             while (1)
             {
                 iter_x = ix + step * direction;
