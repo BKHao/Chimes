@@ -24,6 +24,7 @@ if (USE_GEOMETRY)
                 Geometry/point.h
                 Geometry/polygon.h
                 Geometry/triangle.h
+                Geometry/segment.h
                 Geometry/surface.h
         )
 endif()

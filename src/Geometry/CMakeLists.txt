@@ -5,6 +5,7 @@ set(Chimes_Geometry_SRC
         point.cpp
         polygon.cpp
         triangle.cpp
+        segment.cpp
         surface.cpp
         )
 

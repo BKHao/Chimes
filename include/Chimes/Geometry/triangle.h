@@ -24,7 +24,6 @@ namespace Chimes
             //The point data is saved.
             Triangle(const P& p0, const P& p1, const P& p2) :Base(3)
             {
-                std::cout << "copy" << std::endl;
                 Base::points_.push_back(p0);
                 Base::points_.push_back(p1);
                 Base::points_.push_back(p2);
@@ -32,12 +31,12 @@ namespace Chimes
             }
             //Use (p0,p1,p2) to initialize the points.
             //The point data is not saved.
-            Triangle(P&& p0, P&& p1, P&& p2) :Base(3)
+            Triangle(P&& p0, P&& p1, P&& p2) :Base()
             {
-                std::cout << "move" << std::endl;
-                Base::points_.push_back(std::move(p0));
-                Base::points_.push_back(std::move(p1));
-                Base::points_.push_back(std::move(p2));
+                Base::points_ = std::vector<P>(3, 0);
+                Base::points_[0].share(p0);
+                Base::points_[1].share(p1);
+                Base::points_[2].share(p2);
                 Base::state_ = Base::S_COMPLETE;
             }
             //Initialize with the another triangle.

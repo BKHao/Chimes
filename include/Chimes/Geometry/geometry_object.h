@@ -15,6 +15,7 @@ namespace Chimes
             SIMPLE_POLYGON,
             CONVEX_POLYGON,
             TRIANGLE,
+            SEGMENT,
             POLYGON_MESH,
             TRIANGLE_MESH,
         };

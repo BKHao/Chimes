@@ -41,7 +41,7 @@ namespace Chimes
 
 		MemoryPtr(const MemoryPtr& ptr)
 		{
-			if(ptr->block_)
+			if(ptr.block_)
 			{
 				std::unique_lock<std::mutex> lock(ptr.block_->mutex_);
 				++ptr.block_->ref_count_;
@@ -144,6 +144,7 @@ namespace Chimes
 			block_ = nullptr;
 			ptr_ = nullptr;
 		}
+	private:
 		MemoryBlock* block_ = nullptr;
 		T* ptr_ = nullptr;
 	};

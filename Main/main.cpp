@@ -78,7 +78,7 @@ int main(int argv, char* argc[])
 	using P3d = Chimes::geometry::Point3<double>;
 	using Polygon = Chimes::geometry::ConvexPolygon<P3d>;
 	using Triangle = Chimes::geometry::Triangle<P3d>;
-	using Mesh = Chimes::geometry::TriangleMesh<P3d>;
+	using Mesh = Chimes::geometry::ManifoldTriangleMesh<P3d>;
 	//p3d point1(1, 1, 1);
 	//p3d point2;
 	//point2[0] = 2;

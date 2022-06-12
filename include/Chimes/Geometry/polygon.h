@@ -9,41 +9,46 @@ namespace Chimes
 {
 	namespace geometry
 	{
-        //A simple polygon composed of an array of points, the order of the points indicates the boundary connection. Represent the points through smart pointer.
+        //A simple polygon composed of an array of points, the order of the points indicates the boundary connection.
         template <typename P>
             requires concept_point_operater<P>&& concept_point_normal<P>
         class SimplePolygon : public GeometryObject
         {
         protected:
-            static const unsigned int S_COMPLETE = 1;
-            static const unsigned int S_PROCESSING = 1 << 1;
-            static const unsigned int S_PID = 1 << 2;
+            static const unsigned int S_PID = 1;
+            static const unsigned int S_POINT = 1 << 1;
+            static const unsigned int S_PROCESSING = 1 << 2;
         public:
             //Initialize the polygon with no ponit.
-            SimplePolygon() :points_(0), state_(0), pids_(0)
+            SimplePolygon() :points_(0), state_(0), pids_(0), cursor_(0)
             {
 
             }
             //Initialize the polygon with no ponit, but reserve n points capacity.
-            SimplePolygon(size_t n) :points_(0), state_(0), pids_(0)
+            SimplePolygon(size_t n) :points_(0), state_(0), pids_(0), cursor_(0)
             {
                 points_.reserve(n);
             }
             //Initialize the polygon with an array of points.
             //The point data is saved.
-            SimplePolygon(const std::vector<P>& points) :points_(points), state_(S_COMPLETE), pids_(0)
+            SimplePolygon(const std::vector<P>& points) :points_(points), state_(S_POINT), pids_(0), cursor_(0)
             {
                 
             }
             //Initialize the polygon with an array of points.
             //The point data is not saved.
-            SimplePolygon(std::vector<P>&& points) :points_(std::move(points)), state_(S_COMPLETE), pids_(0)
+            SimplePolygon(std::vector<P>&& points) :points_(std::move(points)), state_(S_POINT), pids_(0), cursor_(0)
             {
                 
             }
+            //Initialize the polygon with an array of index.
+            SimplePolygon(const MemoryPtr<size_t>& pids, size_t cursor):points_(0), state_(S_PID), pids_(pids), cursor_(cursor)
+            {
+
+            }
             //Copy construct the polygon with another polygon.
             //The point data is saved but don't set pid.
-            SimplePolygon(const SimplePolygon& polygon): points_(polygon.points_), state_(S_COMPLETE), pids_(0), cursor_(0)
+            SimplePolygon(const SimplePolygon& polygon): points_(polygon.points_), state_(polygon.state_ & (~S_PID)), pids_(0), cursor_(0)
             {
                 
             }
@@ -60,7 +65,7 @@ namespace Chimes
                 points_ = polygon.points_;
                 pids_ = MemoryPtr<size_t>(0);
                 cursor_ = 0;
-                state_ = S_COMPLETE;
+                state_ = polygon.state_ & (~S_PID);
             }
             //Assign the polygon with another polygon.
             //The point data is not saved.
@@ -105,7 +110,7 @@ namespace Chimes
                 if (points_.size() > 2)
                 {
                     state_ &= (~S_PROCESSING);
-                    state_ |= S_COMPLETE;
+                    state_ |= S_POINT;
                     return true;
                 }
                 else
@@ -118,6 +123,8 @@ namespace Chimes
             //Get the const pointer of the i-th point.
             const P& operator[](size_t i) const
             {
+                if (!(state_ & S_POINT))
+                    throw std::runtime_error("this triangle is a only index triangle.");
                 if (i < points_.size())
                     return points_[i];
                 else
@@ -126,6 +133,8 @@ namespace Chimes
             //Set the id of the points. Believe the data is correct.
             void SetPid(const MemoryPtr<size_t>& pids, size_t cursor)
             {
+                if (state_ & S_PID)
+                    throw std::runtime_error("repeatedly set the index.");
                 pids_ = pids;
                 cursor_ = cursor;
                 state_ |= S_PID;
@@ -135,10 +144,7 @@ namespace Chimes
             {
                 if (!(state_ & S_PID))
                     throw std::runtime_error("Pid has not been set.");
-                if (i < points_.size())
-                    return pids_[cursor_ + i];
-                else
-                    return -1;
+                return pids_[cursor_ + i];
             }
             //Return the geometry type.
             virtual GeometryType Info() const

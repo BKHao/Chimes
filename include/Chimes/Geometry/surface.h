@@ -4,8 +4,10 @@
 #include <Chimes/Core/iterator_base.h>
 #include <Chimes/Geometry/geometry_object.h>
 #include <Chimes/Geometry/triangle.h>
+#include <Chimes/Geometry/segment.h>
 #include <fstream>
 #include <iterator>
+#include <map>
 
 namespace Chimes
 {
@@ -15,12 +17,12 @@ namespace Chimes
         requires concept_point_operater<VertexType>&& concept_point_normal<VertexType>&& concept_point_ostream<VertexType>&& concept_point_istream<VertexType>&& concept_point_index<VertexType>
             class PolygonMesh;
 
-        template <typename V, typename F>
-        class VertexIterator : public std::iterator<std::random_access_iterator_tag, V>
+        template <typename VertexType, typename FaceType>
+        class VertexIterator : public std::iterator<std::random_access_iterator_tag, VertexType>
         {
-            friend class PolygonMesh<V, F>;
+            friend class PolygonMesh<VertexType, FaceType>;
         public:
-            explicit VertexIterator(PolygonMesh<V, F>* mesh, size_t cursor) : mesh_(mesh), cursor_(cursor)
+            explicit VertexIterator(PolygonMesh<VertexType, FaceType>* mesh, size_t cursor) : mesh_(mesh), cursor_(cursor)
             {
 
             }
@@ -49,7 +51,7 @@ namespace Chimes
                 cursor_++;
                 return tmp;
             }
-            V& operator*()
+            VertexType& operator*()
             {
                 if (cursor_ < 0 or cursor_ >= mesh_->NumberOfVertices())
                 {
@@ -57,7 +59,7 @@ namespace Chimes
                 }
                 return mesh_->vertices_[cursor_];
             }
-            V* operator->()
+            VertexType* operator->()
             {
                 if (cursor_ < 0 or cursor_ >= mesh_->NumberOfVertices())
                 {
@@ -74,16 +76,16 @@ namespace Chimes
                 return cursor_ != v_iter.cursor_;
             }
         protected:
-            PolygonMesh<V, F>* mesh_;
+            PolygonMesh<VertexType, FaceType>* mesh_;
             size_t cursor_;
         };
 
-        template <typename V, typename F>
-        class FaceIterator : public std::iterator<std::random_access_iterator_tag, F>
+        template <typename VertexType, typename FaceType>
+        class FaceIterator : public std::iterator<std::random_access_iterator_tag, FaceType>
         {
-            friend class PolygonMesh<V, F>;
+            friend class PolygonMesh<VertexType, FaceType>;
         public:
-            explicit FaceIterator(PolygonMesh<V, F>* mesh, size_t cursor) : mesh_(mesh), cursor_(cursor)
+            explicit FaceIterator(PolygonMesh<VertexType, FaceType>* mesh, size_t cursor) : mesh_(mesh), cursor_(cursor)
             {
 
             }
@@ -112,7 +114,7 @@ namespace Chimes
                 cursor_++;
                 return tmp;
             }
-            F& operator*()
+            FaceType& operator*()
             {
                 if (cursor_ < 0 or cursor_ >= mesh_->NumberOfFaces())
                 {
@@ -120,7 +122,7 @@ namespace Chimes
                 }
                 return mesh_->faces_[cursor_];
             }
-            F* operator->()
+            FaceType* operator->()
             {
                 if (cursor_ < 0 or cursor_ >= mesh_->NumberOfVertices())
                 {
@@ -137,7 +139,7 @@ namespace Chimes
                 return cursor_ != f_iter.cursor_;
             }
         protected:
-            PolygonMesh<V, F>* mesh_;
+            PolygonMesh<VertexType, FaceType>* mesh_;
             size_t cursor_;
         };
 
@@ -211,13 +213,13 @@ namespace Chimes
             std::vector<FaceType> faces_;
         };
         //The common triangle mesh, which contains a set of vertices and triangles. Both vertices and triangles are contiguous storage in memory
-        template <typename V>
-        class TriangleMesh : public PolygonMesh<V, Triangle<V>>
+        template <typename VertexType>
+        class TriangleMesh : public PolygonMesh<VertexType, Triangle<VertexType>>
         {
         private:
-            using Base = PolygonMesh<V, Triangle<V>>;
-            using Tri = Triangle<V>;
-            using Real = typename V::R;
+            using Base = PolygonMesh<VertexType, Triangle<VertexType>>;
+            using Tri = Triangle<VertexType>;
+            using Real = typename VertexType::R;
         public:
             //Load from file.
             //The data is saved.
@@ -294,7 +296,7 @@ namespace Chimes
                     Base::vertex_data_[i] = points_xyz[i];
                     Base::vertex_data_[i + 1] = points_xyz[i + 1];
                     Base::vertex_data_[i + 2] = points_xyz[i + 2];                    
-                    Base::vertices_.emplace_back(V(Base::vertex_data_, i));
+                    Base::vertices_.emplace_back(VertexType(Base::vertex_data_, i));
                 }
                 Base::faces_.reserve(index_xyz.size() / 3);
                 for (size_t i = 0; i < index_xyz.size(); i += 3)
@@ -302,15 +304,134 @@ namespace Chimes
                     Base::index_data_[i] = index_xyz[i];
                     Base::index_data_[i + 1] = index_xyz[i + 1];
                     Base::index_data_[i + 2] = index_xyz[i + 2];
-                    std::vector<V> tri_points(3, 0);
-                    tri_points[0].share(Base::vertices_[Base::index_data_[i]]);
-                    tri_points[1].share(Base::vertices_[Base::index_data_[i + 1]]);
-                    tri_points[2].share(Base::vertices_[Base::index_data_[i + 2]]);
-                    Base::faces_.emplace_back(Tri(std::move(tri_points)));
-                    Base::faces_.back().SetPid(Base::index_data_, i);
+                    //std::vector<VertexType> tri_points(3, 0);
+                    //tri_points[0].share(Base::vertices_[Base::index_data_[i]]);
+                    //tri_points[1].share(Base::vertices_[Base::index_data_[i + 1]]);
+                    //tri_points[2].share(Base::vertices_[Base::index_data_[i + 2]]);
+                    Base::faces_.emplace_back(Tri(Base::index_data_, i));
+                    //Base::faces_.back().SetPid(Base::index_data_, i);
                 }                
                 return true;
             }
+        };
+
+        template <typename VertexType>
+        class ManifoldTriangleMesh : public TriangleMesh<VertexType>
+        {
+        private:
+            using Base = TriangleMesh<VertexType>;
+            using Tri = Triangle<VertexType>;
+            using Real = typename VertexType::R;
+        public:
+            class MTMEdge :public Segment<VertexType>
+            {
+            public:
+                MTMEdge() :Segment<VertexType>()
+                {
+                    start_vertex_ = -1;
+                    end_vertex_ = -1;
+                    opposite_vertex_ = -1;
+                    prv_edge_ = -1;
+                    next_edge_ = -1;
+                    reverse_edge_ = -1;
+                    face_ = -1;
+                }
+                MTMEdge(size_t i0, size_t i1) : Segment<VertexType>(i0, i1)
+                {
+                    start_vertex_ = i0;
+                    end_vertex_ = i1;
+                    opposite_vertex_ = -1;
+                    prv_edge_ = -1;
+                    next_edge_ = -1;
+                    reverse_edge_ = -1;
+                    face_ = -1;
+                }
+            public:
+                int start_vertex_;
+                int end_vertex_;
+                int opposite_vertex_;
+                int prv_edge_;
+                int next_edge_;
+                int reverse_edge_;
+                int face_;
+            };
+        public:
+            //Load from file.
+            //The data is saved.
+            ManifoldTriangleMesh(const std::string& file) : Base(file)
+            {
+                OrganizeHalfEdge();
+            }
+        private:
+            void OrganizeHalfEdge()
+            {
+                halfedges_.resize(0);
+                halfedges_.reserve(Base::NumberOfFaces() * 3);
+                std::map<std::pair<size_t, size_t>, size_t> from_ipair_to_location;
+                std::vector<size_t> eid_in_f(3, -1);
+                for (size_t i = 0; i < Base::faces_.size(); ++i)
+                {
+                    eid_in_f.clear();
+                    eid_in_f.resize(3, -1);
+                    for (size_t j = 0; j < 3; ++j)
+                    {
+                        size_t next = (j + 1) % 3;
+                        size_t prv = (j + 2) % 3;
+                        size_t start_vertex = Base::faces_[i].Pid(prv);
+                        size_t end_vertex = Base::faces_[i].Pid(j);
+                        std::map<std::pair<size_t, size_t>, size_t>::const_iterator it = from_ipair_to_location.find(std::make_pair(start_vertex, end_vertex));
+                        if (it != from_ipair_to_location.end())
+                        {
+                            size_t loc_in_edges = it->second;
+                            if (halfedges_[loc_in_edges].opposite_vertex_ != -1)
+                            {
+                                throw std::runtime_error("repeated edges.");
+                            }
+                            eid_in_f[j] = loc_in_edges;
+                            halfedges_[loc_in_edges].opposite_vertex_ = Base::faces_[i].Pid(next);
+                            halfedges_[loc_in_edges].face_ = i;
+                        }
+                        else
+                        {
+                            halfedges_.emplace_back(MTMEdge(start_vertex, end_vertex));
+                            halfedges_.back().face_ = i;
+                            halfedges_.back().opposite_vertex_ = Base::faces_[i].Pid(next);
+                            halfedges_.back().reverse_edge_ = halfedges_.size();
+                            from_ipair_to_location[std::make_pair(start_vertex, end_vertex)] = eid_in_f[j] = halfedges_.size() - 1;
+
+                            halfedges_.emplace_back(MTMEdge(end_vertex, start_vertex));
+                            halfedges_.back().reverse_edge_ = halfedges_.size() - 2;
+                            from_ipair_to_location[std::make_pair(end_vertex, start_vertex)] = halfedges_.size() - 1;
+                        }
+                    }
+                    for (size_t j = 0; j < 3; ++j)
+                    {
+                        halfedges_[eid_in_f[j]].prv_edge_ = eid_in_f[(j + 2) % 3];
+                        halfedges_[eid_in_f[j]].next_edge_ = eid_in_f[(j + 1) % 3];
+                    }
+                }
+                neighbor_edge_of_vertex_.clear();
+                neighbor_edge_of_vertex_.resize(Base::vertices_.size(), -1);
+                neighbor_edge_of_face_.clear();
+                neighbor_edge_of_face_.resize(Base::faces_.size(), -1);
+                for (auto it = halfedges_.begin(); it != halfedges_.end(); ++it)
+                {
+                    if (it->face_ == -1)
+                        continue;
+                    if (neighbor_edge_of_vertex_[it->start_vertex_] == -1 || halfedges_[it->reverse_edge_].face_ == -1)
+                    {
+                        neighbor_edge_of_vertex_[it->start_vertex_] = it - halfedges_.begin();
+                    }
+                    if (Base::faces_[it->face_].Pid(0) == it->opposite_vertex_)
+                    {
+                        neighbor_edge_of_face_[it->face_] = it - halfedges_.begin();
+                    }
+                }
+            }
+        private:
+            std::vector<MTMEdge> halfedges_;
+            std::vector<int> neighbor_edge_of_vertex_;
+            std::vector<int> neighbor_edge_of_face_;
         };
 	} // namespace geometry
 } // namespace Chimes
