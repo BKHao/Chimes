@@ -143,11 +143,22 @@ int main(int argv, char* argc[])
 	Mesh mesh("cube.obj");
 	std::cout << mesh.NumberOfFaces() << std::endl;
 	mesh.save("cube2.obj");
-	auto viter = mesh.begin();
-	for (size_t i = 0; i < mesh.NumberOfVertices(); ++i)
+	auto viter = mesh.VBegin();
+	for (auto viter = mesh.VBegin(); viter != mesh.VEnd(); ++viter)
 	{
 		std::cout << *viter << std::endl;
-		++viter;
+		//++viter;
+	}
+	//auto is_you = [](const P3d& p) {return p.x() > 0 && p.y() > 0 && p.z() > 0; };
+	auto find_res = std::find_if(mesh.VBegin(), mesh.VEnd(), [](const P3d& p)->bool {return p.x() > 0 && p.y() > 0 && p.z() > 0; });
+	if (find_res != mesh.VEnd())
+	{
+		std::cout << *find_res << std::endl;
+	}
+	auto find_tri = std::find_if(mesh.FBegin(), mesh.FEnd(), [](const Triangle& t)->bool {return t.Pid(0) == 0 || t.Pid(1) == 0 || t.Pid(2) == 0; });
+	if (find_tri != mesh.FEnd())
+	{
+		std::cout << *find_tri << std::endl;
 	}
 	std::cout << "======================" << std::endl;
 	//std::vector<Test> tests;

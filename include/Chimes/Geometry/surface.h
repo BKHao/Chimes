@@ -5,64 +5,154 @@
 #include <Chimes/Geometry/geometry_object.h>
 #include <Chimes/Geometry/triangle.h>
 #include <fstream>
+#include <iterator>
 
 namespace Chimes
 {
 	namespace geometry
 	{
-        template <typename P>
-        class VertexIterator : public IteratorBase<P>
+        template <typename VertexType, typename FaceType>
+        requires concept_point_operater<VertexType>&& concept_point_normal<VertexType>&& concept_point_ostream<VertexType>&& concept_point_istream<VertexType>&& concept_point_index<VertexType>
+            class PolygonMesh;
+
+        template <typename V, typename F>
+        class VertexIterator : public std::iterator<std::random_access_iterator_tag, V>
         {
+            friend class PolygonMesh<V, F>;
         public:
-            VertexIterator(): vertex_(nullptr)
+            explicit VertexIterator(PolygonMesh<V, F>* mesh, size_t cursor) : mesh_(mesh), cursor_(cursor)
             {
 
             }
-            VertexIterator(const VertexIterator& vi) :vertex_(vi.vertex_)
+            VertexIterator& operator=(const VertexIterator& v_iter)
             {
-
-            }
-            VertexIterator(VertexIterator&& vi) :vertex_(vi.vertex_)
-            {
-
-            }
-            VertexIterator(P* vertex) :vertex_(vertex)
-            {
-                
+                mesh_ = v_iter.mesh_;
+                cursor_ = v_iter.cursor_;
+                return *this;
             }
             VertexIterator& operator++()
             {
-                vertex_++;
+                if (cursor_ >= mesh_->NumberOfVertices())
+                {
+                    throw std::logic_error("Cannot increment an end iterator");
+                }
+                cursor_++;
                 return *this;
             }
             VertexIterator operator++(int)
             {
+                if (cursor_ >= mesh_->NumberOfVertices())
+                {
+                    throw std::logic_error("Cannot increment an end iterator");
+                }
                 VertexIterator tmp = *this;
-                vertex_++;
+                cursor_++;
                 return tmp;
             }
-            virtual P& operator*()
+            V& operator*()
             {
-                return *vertex_;
+                if (cursor_ < 0 or cursor_ >= mesh_->NumberOfVertices())
+                {
+                    throw std::logic_error("Cannot dereference an invalid iterator");
+                }
+                return mesh_->vertices_[cursor_];
             }
-            virtual P* operator->()
+            V* operator->()
             {
-                return vertex_;
+                if (cursor_ < 0 or cursor_ >= mesh_->NumberOfVertices())
+                {
+                    throw std::logic_error("Cannot dereference an invalid iterator");
+                }
+                return &mesh_->vertices_[cursor_];
             }
-        private:
-            P* vertex_;
+            bool operator==(const VertexIterator& v_iter) const
+            {
+                return cursor_ == v_iter.cursor_;
+            }
+            bool operator!=(const VertexIterator& v_iter) const
+            {
+                return cursor_ != v_iter.cursor_;
+            }
+        protected:
+            PolygonMesh<V, F>* mesh_;
+            size_t cursor_;
+        };
+
+        template <typename V, typename F>
+        class FaceIterator : public std::iterator<std::random_access_iterator_tag, F>
+        {
+            friend class PolygonMesh<V, F>;
+        public:
+            explicit FaceIterator(PolygonMesh<V, F>* mesh, size_t cursor) : mesh_(mesh), cursor_(cursor)
+            {
+
+            }
+            FaceIterator& operator=(const FaceIterator& f_iter)
+            {
+                mesh_ = f_iter.mesh_;
+                cursor_ = f_iter.cursor_;
+                return *this;
+            }
+            FaceIterator& operator++()
+            {
+                if (cursor_ >= mesh_->NumberOfFaces())
+                {
+                    throw std::logic_error("Cannot increment an end iterator");
+                }
+                cursor_++;
+                return *this;
+            }
+            FaceIterator operator++(int)
+            {
+                if (cursor_ >= mesh_->NumberOfFaces())
+                {
+                    throw std::logic_error("Cannot increment an end iterator");
+                }
+                FaceIterator tmp = *this;
+                cursor_++;
+                return tmp;
+            }
+            F& operator*()
+            {
+                if (cursor_ < 0 or cursor_ >= mesh_->NumberOfFaces())
+                {
+                    throw std::logic_error("Cannot dereference an invalid iterator");
+                }
+                return mesh_->faces_[cursor_];
+            }
+            F* operator->()
+            {
+                if (cursor_ < 0 or cursor_ >= mesh_->NumberOfVertices())
+                {
+                    throw std::logic_error("Cannot dereference an invalid iterator");
+                }
+                return &mesh_->faces_[cursor_];
+            }
+            bool operator==(const FaceIterator& f_iter) const
+            {
+                return cursor_ == f_iter.cursor_;
+            }
+            bool operator!=(const FaceIterator& f_iter) const
+            {
+                return cursor_ != f_iter.cursor_;
+            }
+        protected:
+            PolygonMesh<V, F>* mesh_;
+            size_t cursor_;
         };
 
         //The base class of polygon mesh, which contains a set of vertices and polygons. Both vertices and polygons are contiguous storage in memory.
-        template <typename P>
-            requires concept_point_operater<P>&& concept_point_normal<P>&& concept_point_ostream<P>&& concept_point_istream<P>&& concept_point_index<P>
+        template <typename VertexType, typename FaceType>
+            requires concept_point_operater<VertexType>&& concept_point_normal<VertexType>&& concept_point_ostream<VertexType>&& concept_point_istream<VertexType>&& concept_point_index<VertexType>
         class PolygonMesh : public GeometryObject
         {
+                friend class VertexIterator<VertexType, FaceType>;
+                friend class FaceIterator<VertexType, FaceType>;
         private:
-            using Real = typename P::R;
+            using Real = typename VertexType::R;
         public:
             //Empty initialization.
-            PolygonMesh() :vertex_data_(0), vertices_(0)
+            PolygonMesh() :vertex_data_(0), vertices_(0), index_data_(0), faces_(0)
             {
 
             }
@@ -84,30 +174,54 @@ namespace Chimes
                 return vertex_data_;
             }
             // Return the i_th vertex.
-            const P& Vertex(size_t i) const
+            const VertexType& Vertex(size_t i) const
             {
                 return vertices_[i];
             }
-            VertexIterator<P> begin()
+            //Return the number of faces.
+            size_t NumberOfFaces() const
             {
-                return VertexIterator<P>(vertices_.data());
+                return faces_.size();
+            }
+            // Return the i_th face.
+            const FaceType& Face(size_t i) const
+            {
+                return faces_[i];
+            }
+            VertexIterator<VertexType, FaceType> VBegin()
+            {
+                return VertexIterator<VertexType, FaceType>(this, 0);
+            }
+            VertexIterator<VertexType, FaceType> VEnd()
+            {
+                return VertexIterator<VertexType, FaceType>(this, vertices_.size());
+            }
+            FaceIterator<VertexType, FaceType> FBegin()
+            {
+                return FaceIterator<VertexType, FaceType>(this, 0);
+            }
+            FaceIterator<VertexType, FaceType> FEnd()
+            {
+                return FaceIterator<VertexType, FaceType>(this, faces_.size());
             }
         protected:
             MemoryPtr<Real> vertex_data_;
-            std::vector<P> vertices_;
+            std::vector<VertexType> vertices_;
+            MemoryPtr<size_t> index_data_;
+            std::vector<FaceType> faces_;
         };
         //The common triangle mesh, which contains a set of vertices and triangles. Both vertices and triangles are contiguous storage in memory
-        template <typename P>
-        class TriangleMesh : public PolygonMesh<P>
+        template <typename V>
+        class TriangleMesh : public PolygonMesh<V, Triangle<V>>
         {
         private:
-            using Base = PolygonMesh<P>;
-            using Tri = Triangle<P>;
-            using Real = typename P::R;
+            using Base = PolygonMesh<V, Triangle<V>>;
+            using Tri = Triangle<V>;
+            using Real = typename V::R;
         public:
             //Load from file.
             //The data is saved.
-            TriangleMesh(const std::string& file) : Base(), index_data_(0), triangles_(0)
+            TriangleMesh(const std::string& file) : Base()
             {
                 load_from_obj(file);
             }
@@ -119,9 +233,9 @@ namespace Chimes
                 {
                     out << "v " << Base::vertices_[i] << std::endl;
                 }
-                for (size_t i = 0; i < triangles_.size(); ++i)
+                for (size_t i = 0; i < Base::faces_.size(); ++i)
                 {
-                    out << "f " << triangles_[i].Pid(0) + 1 << " " << triangles_[i].Pid(1) + 1 << " " << triangles_[i].Pid(2) + 1 << std::endl;
+                    out << "f " << Base::faces_[i].Pid(0) + 1 << " " << Base::faces_[i].Pid(1) + 1 << " " << Base::faces_[i].Pid(2) + 1 << std::endl;
                 }
                 out.close();
                 return true;
@@ -131,17 +245,6 @@ namespace Chimes
             {
                 return GeometryType::TRIANGLE_MESH;
             }
-            //Return the number of triangles.
-            size_t NumberOfFaces() const
-            {
-                return triangles_.size();
-            }
-            // Return the i_th triangle.
-            const Tri& Face(size_t i) const
-            {
-                return triangles_[i];
-            }
-
         protected:
             //Load mesh from obj file.
             bool load_from_obj(const std::string& file)
@@ -149,7 +252,7 @@ namespace Chimes
                 std::stringstream scream_line;
                 std::ifstream in(file);
                 Base::vertices_.clear();
-                triangles_.clear();
+                Base::faces_.clear();
                 std::string line;
                 std::vector<Real> points_xyz;
                 std::vector<size_t> index_xyz;
@@ -184,33 +287,30 @@ namespace Chimes
                 }
                 in.close();
                 Base::vertex_data_ = MemoryPtr<Real>(points_xyz.size());
-                index_data_ = MemoryPtr<size_t>(index_xyz.size());
+                Base::index_data_ = MemoryPtr<size_t>(index_xyz.size());
                 Base::vertices_.reserve(points_xyz.size() / 3);
                 for (size_t i = 0; i < points_xyz.size(); i += 3)
                 {
                     Base::vertex_data_[i] = points_xyz[i];
                     Base::vertex_data_[i + 1] = points_xyz[i + 1];
                     Base::vertex_data_[i + 2] = points_xyz[i + 2];                    
-                    Base::vertices_.emplace_back(P(Base::vertex_data_, i));
+                    Base::vertices_.emplace_back(V(Base::vertex_data_, i));
                 }
-                triangles_.reserve(index_xyz.size() / 3);
+                Base::faces_.reserve(index_xyz.size() / 3);
                 for (size_t i = 0; i < index_xyz.size(); i += 3)
                 {
-                    index_data_[i] = index_xyz[i];
-                    index_data_[i + 1] = index_xyz[i + 1];
-                    index_data_[i + 2] = index_xyz[i + 2];
-                    std::vector<P> tri_points(3, 0);
-                    tri_points[0].share(Base::vertices_[index_data_[i]]);
-                    tri_points[1].share(Base::vertices_[index_data_[i + 1]]);
-                    tri_points[2].share(Base::vertices_[index_data_[i + 2]]);
-                    triangles_.emplace_back(Tri(std::move(tri_points)));
-                    triangles_.back().SetPid(index_data_, i);
+                    Base::index_data_[i] = index_xyz[i];
+                    Base::index_data_[i + 1] = index_xyz[i + 1];
+                    Base::index_data_[i + 2] = index_xyz[i + 2];
+                    std::vector<V> tri_points(3, 0);
+                    tri_points[0].share(Base::vertices_[Base::index_data_[i]]);
+                    tri_points[1].share(Base::vertices_[Base::index_data_[i + 1]]);
+                    tri_points[2].share(Base::vertices_[Base::index_data_[i + 2]]);
+                    Base::faces_.emplace_back(Tri(std::move(tri_points)));
+                    Base::faces_.back().SetPid(Base::index_data_, i);
                 }                
                 return true;
             }
-        protected:
-            MemoryPtr<size_t> index_data_;
-            std::vector<Tri> triangles_;
         };
 	} // namespace geometry
 } // namespace Chimes
